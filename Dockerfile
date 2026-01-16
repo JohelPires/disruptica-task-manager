@@ -13,8 +13,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate Prisma Client
-RUN npm run prisma:generate
+# Generate Prisma Client (DATABASE_URL is required by Prisma 7 config but not used during generation)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public" npm run prisma:generate
 
 # Build TypeScript
 RUN npm run build
@@ -24,17 +24,18 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package files and Prisma schema
+# Copy package files, Prisma schema, and config
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 # Install production dependencies and Prisma CLI (needed for migrations)
 RUN npm ci --only=production && \
     npm install -g prisma && \
     npm cache clean --force
 
-# Generate Prisma Client in production
-RUN npx prisma generate
+# Generate Prisma Client in production (DATABASE_URL is required by Prisma 7 config but not used during generation)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public" npx prisma generate
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
