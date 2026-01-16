@@ -57,11 +57,25 @@ export class ProjectService {
     return project;
   }
 
-  async getProjects(userId: string, userRole: string) {
-    if (userRole === 'owner') {
-      return prisma.project.findMany({
+  async getProjects(userId: string, userRole: string, includeOptions?: { owner?: boolean; members?: boolean }) {
+    const includeOwner = includeOptions?.owner ?? false;
+    const includeMembers = includeOptions?.members ?? false;
+
+    const include: any = {};
+    if (includeOwner) {
+      include.owner = {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      };
+    }
+    if (includeMembers) {
+      include.members = {
         include: {
-          owner: {
+          user: {
             select: {
               id: true,
               email: true,
@@ -69,19 +83,13 @@ export class ProjectService {
               role: true,
             },
           },
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  name: true,
-                  role: true,
-                },
-              },
-            },
-          },
         },
+      };
+    }
+
+    if (userRole === 'owner') {
+      return prisma.project.findMany({
+        ...(Object.keys(include).length > 0 ? { include } : {}),
         orderBy: { createdAt: 'desc' },
       });
     }
@@ -99,28 +107,7 @@ export class ProjectService {
           },
         ],
       },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-          },
-        },
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                name: true,
-                role: true,
-              },
-            },
-          },
-        },
-      },
+      ...(Object.keys(include).length > 0 ? { include } : {}),
       orderBy: { createdAt: 'desc' },
     });
   }

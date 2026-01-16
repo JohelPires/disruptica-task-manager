@@ -52,6 +52,13 @@ router.post('/', requireAuth, projectController.create);
  *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: include
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of relations to include (e.g., "owner,members")
+ *         example: "owner,members"
  *     responses:
  *       200:
  *         description: Projects retrieved successfully
