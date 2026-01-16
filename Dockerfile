@@ -1,62 +1,61 @@
-# Build stage
+# =========================
+# Builder stage
+# =========================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy dependency manifests
+COPY package.json package-lock.json ./
 
-# Install all dependencies (including dev dependencies for build)
+# Install all dependencies (dev deps included)
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy Prisma schema BEFORE generate
+COPY prisma ./prisma
 
-# Generate Prisma Client (DATABASE_URL is required by Prisma 7 config but not used during generation)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public" npm run prisma:generate
+# Generate Prisma Client (required before tsc)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public" \
+    npx prisma generate
+
+# Copy the rest of the source code
+COPY . .
 
 # Build TypeScript
 RUN npm run build
 
+
+# =========================
 # Production stage
+# =========================
 FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package files, Prisma schema, and config
-COPY package*.json ./
-COPY prisma ./prisma/
-COPY prisma.config.ts ./
+# Copy dependency manifests
+COPY package.json package-lock.json ./
 
-# Install production dependencies and Prisma CLI (needed for migrations)
-RUN npm ci --only=production && \
-    npm install -g prisma && \
-    npm cache clean --force
+# Install production dependencies ONLY
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Generate Prisma Client in production (DATABASE_URL is required by Prisma 7 config but not used during generation)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public" npx prisma generate
+# Copy Prisma runtime artifacts from builder
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copy built application from builder stage
+# Copy built app and Prisma schema
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Create non-root user
+RUN addgroup -S nodejs -g 1001 \
+  && adduser -S nodejs -u 1001 -G nodejs
 
-# Change ownership to non-root user
-RUN chown -R nodejs:nodejs /app
 USER nodejs
 
-# Expose the port the app runs on
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api-docs.json', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000/api-docs.json', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-# Start the application
-# Easypanel can handle migrations via a separate job, but we run them here as a safety measure
-# If migrations fail, the container will exit early
-CMD ["sh", "-c", "prisma migrate deploy && node dist/server.js"]
-
+# Run migrations then start app
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
