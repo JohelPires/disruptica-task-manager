@@ -16,7 +16,7 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 
 # FIX: copy swagger file
-COPY swagger.yaml ./swagger.yaml
+# COPY swagger.yaml ./swagger.yaml
 
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
