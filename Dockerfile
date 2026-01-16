@@ -1,64 +1,65 @@
-# Stage 1: Build stage
-FROM node:20-alpine AS builder
+############################
+# Stage 1 — Dependencies
+############################
+FROM node:20-alpine AS deps
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Required for Prisma on Alpine
+RUN apk add --no-cache openssl
+
+# Copy only dependency manifests for cache efficiency
+COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies (including devDependencies for building)
+# Install dependencies (including devDeps)
 RUN npm ci
-
-# Copy source code
-COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
 
+############################
+# Stage 2 — Build
+############################
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# Copy node_modules and Prisma client from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
+
+# Copy source code
+COPY . .
+
 # Build TypeScript
 RUN npm run build
 
-# Stage 2: Production stage
+############################
+# Stage 3 — Production
+############################
 FROM node:20-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Minimal runtime dependencies
+RUN apk add --no-cache dumb-init openssl
 
-# Create app directory and non-root user
 WORKDIR /app
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# Create non-root user
+RUN addgroup -S app && adduser -S app -G app
 
-# Install only production dependencies
-RUN npm ci --only=production && \
-    npm cache clean --force
+# Copy only what is required to run
+COPY package.json ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copy built application from builder stage
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+# Switch user
+USER app
 
-# Copy generated Prisma Client from builder stage
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
-
-# Copy Prisma CLI for running migrations (from builder stage)
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-
-# Switch to non-root user
-USER nodejs
-
-# Expose port (default 3000, can be overridden via env)
 EXPOSE 3000
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Run migrations and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
-
+CMD ["node", "dist/server.js"]
