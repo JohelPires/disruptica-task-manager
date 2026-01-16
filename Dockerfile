@@ -1,5 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl openssl-dev libc6-compat
 COPY package*.json ./
 RUN npm ci
 COPY prisma ./prisma
@@ -10,6 +12,8 @@ RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
+# Install OpenSSL 1.1 compatibility library for Prisma (needed for libssl.so.1.1)
+RUN apk add --no-cache openssl1.1-compat libc6-compat
 ENV NODE_ENV=production
 COPY package*.json ./
 COPY prisma ./prisma
