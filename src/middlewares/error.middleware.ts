@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export function errorMiddleware(error: Error, _req: Request, res: Response, _next: NextFunction): Response | void {
   if (error instanceof ZodError) {
@@ -21,7 +21,7 @@ export function errorMiddleware(error: Error, _req: Request, res: Response, _nex
     });
   }
 
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  if (error instanceof PrismaClientKnownRequestError) {
     if (error.code === 'P2002') {
       return res.status(409).json({
         error: {
