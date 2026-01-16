@@ -1,0 +1,322 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-01-16T13:33:11.324720Z",
+  "__export_source": "chatgpt",
+  "resources": [
+    {
+      "_id": "wrk_api",
+      "_type": "workspace",
+      "name": "Task Management API"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_api",
+      "name": "Base",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "token": "",
+        "project_id": "",
+        "task_id": "",
+        "user_id": ""
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_api",
+      "name": "Auth"
+    },
+    {
+      "_id": "fld_projects",
+      "_type": "request_group",
+      "parentId": "wrk_api",
+      "name": "Projects"
+    },
+    {
+      "_id": "fld_tasks",
+      "_type": "request_group",
+      "parentId": "wrk_api",
+      "name": "Tasks"
+    },
+    {
+      "_id": "fld_comments",
+      "_type": "request_group",
+      "parentId": "wrk_api",
+      "name": "Comments"
+    },
+    {
+      "_id": "auth_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/register",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"email\": \"user@test.com\", \"password\": \"123456\", \"name\": \"Test User\"}"
+      }
+    },
+    {
+      "_id": "auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"email\": \"user@test.com\", \"password\": \"123456\"}"
+      }
+    },
+    {
+      "_id": "auth_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Me",
+      "method": "GET",
+      "url": "{{ base_url }}/auth/me",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "proj_create",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Create Project",
+      "method": "POST",
+      "url": "{{ base_url }}/projects",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"name\": \"My Project\", \"description\": \"Test project\"}"
+      }
+    },
+    {
+      "_id": "proj_list",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "List Projects",
+      "method": "GET",
+      "url": "{{ base_url }}/projects",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "proj_get",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Get Project",
+      "method": "GET",
+      "url": "{{ base_url }}/projects/{{ project_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "proj_update",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Update Project",
+      "method": "PUT",
+      "url": "{{ base_url }}/projects/{{ project_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"name\": \"Updated Project\"}"
+      }
+    },
+    {
+      "_id": "proj_delete",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Delete Project",
+      "method": "DELETE",
+      "url": "{{ base_url }}/projects/{{ project_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "proj_add_member",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Add Member",
+      "method": "POST",
+      "url": "{{ base_url }}/projects/{{ project_id }}/members",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"userId\": \"{{ user_id }}\"}"
+      }
+    },
+    {
+      "_id": "proj_remove_member",
+      "_type": "request",
+      "parentId": "fld_projects",
+      "name": "Remove Member",
+      "method": "DELETE",
+      "url": "{{ base_url }}/projects/{{ project_id }}/members/{{ user_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "task_create",
+      "_type": "request",
+      "parentId": "fld_tasks",
+      "name": "Create Task",
+      "method": "POST",
+      "url": "{{ base_url }}/projects/{{ project_id }}/tasks",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"title\": \"Task title\", \"description\": \"Task description\"}"
+      }
+    },
+    {
+      "_id": "task_list",
+      "_type": "request",
+      "parentId": "fld_tasks",
+      "name": "List Tasks",
+      "method": "GET",
+      "url": "{{ base_url }}/projects/{{ project_id }}/tasks",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "task_get",
+      "_type": "request",
+      "parentId": "fld_tasks",
+      "name": "Get Task",
+      "method": "GET",
+      "url": "{{ base_url }}/tasks/{{ task_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "task_update",
+      "_type": "request",
+      "parentId": "fld_tasks",
+      "name": "Update Task",
+      "method": "PUT",
+      "url": "{{ base_url }}/tasks/{{ task_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"title\": \"Updated title\"}"
+      }
+    },
+    {
+      "_id": "task_delete",
+      "_type": "request",
+      "parentId": "fld_tasks",
+      "name": "Delete Task",
+      "method": "DELETE",
+      "url": "{{ base_url }}/tasks/{{ task_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "comment_create",
+      "_type": "request",
+      "parentId": "fld_comments",
+      "name": "Create Comment",
+      "method": "POST",
+      "url": "{{ base_url }}/tasks/{{ task_id }}/comments",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\"content\": \"Comment text\"}"
+      }
+    },
+    {
+      "_id": "comment_list",
+      "_type": "request",
+      "parentId": "fld_comments",
+      "name": "List Comments",
+      "method": "GET",
+      "url": "{{ base_url }}/tasks/{{ task_id }}/comments",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "comment_delete",
+      "_type": "request",
+      "parentId": "fld_comments",
+      "name": "Delete Comment",
+      "method": "DELETE",
+      "url": "{{ base_url }}/comments/{{ comment_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    }
+  ]
+}
