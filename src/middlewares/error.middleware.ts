@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 
-export function errorMiddleware(error: Error, req: Request, res: Response, next: NextFunction) {
+export function errorMiddleware(error: Error, _req: Request, res: Response, _next: NextFunction): Response | void {
   if (error instanceof ZodError) {
     const errorMessages = error.errors.map((e) => {
       const field = e.path.length > 0 ? e.path.join('.') : 'body';
@@ -122,7 +122,7 @@ export function errorMiddleware(error: Error, req: Request, res: Response, next:
 
   console.error('Unhandled error:', error);
 
-  res.status(500).json({
+  return res.status(500).json({
     error: {
       message: 'Internal server error',
       code: 'INTERNAL_ERROR',
