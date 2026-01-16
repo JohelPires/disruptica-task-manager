@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { TaskController } from './task.controller';
+import * as taskController from './task.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 
 const router = Router();
-const taskController = new TaskController();
 
 /**
  * @swagger
@@ -251,7 +250,7 @@ router.put('/tasks/:id', requireAuth, taskController.update);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/tasks/:id', requireAuth, taskController.delete);
+router.delete('/tasks/:id', requireAuth, taskController.deleteTask);
 
 export default router;
 

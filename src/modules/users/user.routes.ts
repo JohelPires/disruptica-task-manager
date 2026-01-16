@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { UserController } from './user.controller';
+import * as userController from './user.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 
 const router = Router();
-const userController = new UserController();
 
 /**
  * @swagger

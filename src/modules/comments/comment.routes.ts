@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { CommentController } from './comment.controller';
+import * as commentController from './comment.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 
 const router = Router();
-const commentController = new CommentController();
 
 /**
  * @swagger
@@ -151,7 +150,7 @@ router.get('/tasks/:taskId/comments', requireAuth, commentController.getByTask);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/comments/:id', requireAuth, commentController.delete);
+router.delete('/comments/:id', requireAuth, commentController.deleteComment);
 
 export default router;
 

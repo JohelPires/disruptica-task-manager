@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { ProjectController } from './project.controller';
+import * as projectController from './project.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 import { requireProjectOwner } from '../../middlewares/project-owner.middleware';
 
 const router = Router();
-const projectController = new ProjectController();
 
 /**
  * @swagger
@@ -212,7 +211,7 @@ router.put('/:id', requireAuth, requireProjectOwner, projectController.update);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/:id', requireAuth, requireProjectOwner, projectController.delete);
+router.delete('/:id', requireAuth, requireProjectOwner, projectController.deleteProject);
 
 /**
  * @swagger
