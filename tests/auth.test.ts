@@ -29,7 +29,7 @@ describe('Auth API', () => {
       expect(response.body.user.role).toBe('member');
     });
 
-    it('should register a user with owner role', async () => {
+    it('should ignore role field and always create user as member', async () => {
       const response = await request(app)
         .post('/auth/register')
         .send({
@@ -40,7 +40,7 @@ describe('Auth API', () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body.user.role).toBe('owner');
+      expect(response.body.user.role).toBe('member');
     });
 
     it('should not register duplicate email', async () => {
@@ -139,7 +139,7 @@ describe('Auth API', () => {
     let token: string;
 
     beforeEach(async () => {
-      const user = await prisma.user.create({
+      await prisma.user.create({
         data: {
           email: 'test@example.com',
           password: await hashPassword('password123'),

@@ -7,7 +7,6 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().min(1),
-  role: z.enum(['owner', 'member']).optional(),
 });
 
 const loginSchema = z.object({
@@ -22,7 +21,8 @@ export type LoginInput = z.infer<typeof loginSchema>;
  * Registers a new user and returns an authentication token.
  * 
  * Validates input, checks for existing email, hashes password, and creates user.
- * Defaults role to 'member' if not specified. Password is never returned in response.
+ * All new users are created with 'member' role. Role cannot be set during registration.
+ * Password is never returned in response.
  */
 export const register = async (data: RegisterInput) => {
   if (!data || typeof data !== 'object') {
@@ -46,7 +46,7 @@ export const register = async (data: RegisterInput) => {
       email: validated.email,
       password: hashedPassword,
       name: validated.name,
-      role: validated.role || 'member',
+      role: 'member',
     },
     // Explicitly exclude sensitive fields from response
     select: {
