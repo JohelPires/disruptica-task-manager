@@ -28,6 +28,18 @@ app.get('/api-docs.json', (_req, res) => {
   res.send(swaggerSpec);
 });
 
+// Root endpoint with API information and useful links
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'Disruptica Task Manager API',
+    version: '1.0.0',
+    documentation: '/api-docs',
+    api_docs_json: '/api-docs.json',
+    dbdiagram: 'https://dbdiagram.io/d/disruptica-696958add6e030a02430399f',
+    github_repo: 'https://github.com/JohelPires/disruptica-task-manager',
+  });
+});
+
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/projects', projectRoutes);
