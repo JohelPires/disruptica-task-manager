@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { env } from '../config/env';
 import { AuthRequest } from './auth.middleware';
 
@@ -30,10 +30,14 @@ export const apiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => !env.RATE_LIMIT_ENABLED,
-  // Use user ID if available, otherwise fall back to IP
+  // Use user ID if available, otherwise fall back to IP (with IPv6 support)
   keyGenerator: (req) => {
     const userId = (req as AuthRequest).user?.userId;
-    return userId ? `user:${userId}` : req.ip || 'unknown';
+    if (userId) {
+      return `user:${userId}`;
+    }
+    // Use ipKeyGenerator helper for proper IPv6 handling
+    return ipKeyGenerator(req as any);
   },
 });
 
