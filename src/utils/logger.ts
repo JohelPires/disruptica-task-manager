@@ -27,20 +27,25 @@ const loggerConfig: pino.LoggerOptions = {
   },
 };
 
-// In development, use pino-pretty for human-readable output
-// In production, use default JSON formatter
+// In development, try to use pino-pretty for human-readable output
+// Fall back to JSON if pino-pretty is not available (e.g., in production builds)
 let logger: pino.Logger;
 
 if (isDevelopment) {
-  // Development: pretty-printed logs
-  logger = pino(loggerConfig, pino.transport({
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'HH:MM:ss Z',
-      ignore: 'pid,hostname',
-    },
-  }));
+  try {
+    // Development: pretty-printed logs
+    logger = pino(loggerConfig, pino.transport({
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
+      },
+    }));
+  } catch (error) {
+    // Fall back to JSON logging if pino-pretty is not available
+    logger = pino(loggerConfig);
+  }
 } else {
   // Production: structured JSON logs
   logger = pino(loggerConfig);
