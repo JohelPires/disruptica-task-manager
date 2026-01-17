@@ -14,48 +14,48 @@ A comprehensive REST API for managing tasks, projects, users, and comments built
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Database Schema](#database-schema)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [API Endpoints](#api-endpoints)
-- [Testing](#testing)
-- [Project Structure](#project-structure)
-- [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
+-   [Features](#features)
+-   [Tech Stack](#tech-stack)
+-   [Database Schema](#database-schema)
+-   [Prerequisites](#prerequisites)
+-   [Installation](#installation)
+-   [Configuration](#configuration)
+-   [Running the Application](#running-the-application)
+-   [API Documentation](#api-documentation)
+-   [API Endpoints](#api-endpoints)
+-   [Testing](#testing)
+-   [Project Structure](#project-structure)
+-   [Deployment](#deployment)
+-   [Troubleshooting](#troubleshooting)
 
 ## ✨ Features
 
-- 🔐 **Authentication & Authorization** - JWT-based authentication with role-based access control
-- 📁 **Project Management** - Create, update, delete projects with member management
-- ✅ **Task Management** - Full CRUD operations with advanced filtering, sorting, and pagination
-- 💬 **Comments** - Add comments to tasks for collaboration
-- 👥 **User Management** - User profiles with role-based access (owner/member)
-- 🚦 **Rate Limiting** - Protect API endpoints from abuse with configurable rate limits
-- 📚 **API Documentation** - Interactive Swagger/OpenAPI documentation
-- 🔒 **Security** - Password hashing with bcrypt, secure JWT tokens
-- 🎯 **Type Safety** - Full TypeScript support for better developer experience
-- 🔍 **Advanced Filtering** - Filter by multiple criteria (status, priority, dates, assignments, etc.)
-- 📄 **Pagination** - Efficient data retrieval with pagination support
-- 🔎 **Search** - Full-text search across projects, tasks, comments, and users
+-   🔐 **Authentication & Authorization** - JWT-based authentication with role-based access control
+-   📁 **Project Management** - Create, update, delete projects with member management
+-   ✅ **Task Management** - Full CRUD operations with advanced filtering, sorting, and pagination
+-   💬 **Comments** - Add comments to tasks for collaboration
+-   👥 **User Management** - User profiles with role-based access (owner/member)
+-   🚦 **Rate Limiting** - Protect API endpoints from abuse with configurable rate limits
+-   📚 **API Documentation** - Interactive Swagger/OpenAPI documentation
+-   🔒 **Security** - Password hashing with bcrypt, secure JWT tokens
+-   🎯 **Type Safety** - Full TypeScript support for better developer experience
+-   🔍 **Advanced Filtering** - Filter by multiple criteria (status, priority, dates, assignments, etc.)
+-   📄 **Pagination** - Efficient data retrieval with pagination support
+-   🔎 **Search** - Full-text search across projects, tasks, comments, and users
 
 ## 🛠 Tech Stack
 
-- **Runtime**: Node.js 20+
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcrypt
-- **Validation**: Zod
-- **Documentation**: Swagger/OpenAPI (swagger-jsdoc, swagger-ui-express)
-- **Testing**: Jest, Supertest
-- **Containerization**: Docker
+-   **Runtime**: Node.js 20+
+-   **Framework**: Express.js
+-   **Language**: TypeScript
+-   **Database**: PostgreSQL
+-   **ORM**: Prisma
+-   **Authentication**: JWT (jsonwebtoken)
+-   **Password Hashing**: bcrypt
+-   **Validation**: Zod
+-   **Documentation**: Swagger/OpenAPI (swagger-jsdoc, swagger-ui-express)
+-   **Testing**: Jest, Supertest
+-   **Containerization**: Docker
 
 ## 🗄️ Database Schema
 
@@ -65,33 +65,34 @@ The database schema uses PostgreSQL with Prisma ORM. You can view an interactive
 
 ### Models
 
-- **User** - User accounts with authentication (email, password, name, role)
-- **Project** - Projects owned by users with optional descriptions
-- **ProjectMember** - Many-to-many relationship between projects and members with roles
-- **Task** - Tasks belonging to projects with status, priority, and assignments
-- **Comment** - Comments on tasks for collaboration
+-   **User** - User accounts with authentication (email, password, name, role)
+-   **Project** - Projects owned by users with optional descriptions
+-   **ProjectMember** - Many-to-many relationship between projects and members with roles
+-   **Task** - Tasks belonging to projects with status, priority, and assignments
+-   **Comment** - Comments on tasks for collaboration
 
 ### Relationships
 
-- User → Project (one-to-many, owner)
-- User → ProjectMember (one-to-many)
-- Project → ProjectMember (one-to-many)
-- Project → Task (one-to-many)
-- User → Task (many-to-many, assignedTo/createdBy)
-- Task → Comment (one-to-many)
-- User → Comment (one-to-many, author)
+-   User → Project (one-to-many, owner)
+-   User → ProjectMember (one-to-many)
+-   Project → ProjectMember (one-to-many)
+-   Project → Task (one-to-many)
+-   User → Task (many-to-many, assignedTo/createdBy)
+-   Task → Comment (one-to-many)
+-   User → Comment (one-to-many, author)
 
 ## 📦 Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v20 or higher)
-- **PostgreSQL** (v12 or higher)
-- **npm** or **yarn**
-- **Git**
+-   **Node.js** (v20 or higher)
+-   **PostgreSQL** (v12 or higher)
+-   **npm** or **yarn**
+-   **Git**
 
 Optional:
-- **Docker** and **Docker Compose** (for containerized deployment)
+
+-   **Docker** and **Docker Compose** (for containerized deployment)
 
 ## 🚀 Installation
 
@@ -158,8 +159,9 @@ npm run prisma:migrate
 ```
 
 This will:
-- Create the database schema
-- Generate Prisma Client
+
+-   Create the database schema
+-   Generate Prisma Client
 
 ### 6. (Optional) Seed the database
 
@@ -171,29 +173,82 @@ npm run prisma:seed
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `TEST_DATABASE_URL` | Test database connection string | Required |
-| `JWT_SECRET` | Secret key for JWT token signing | Required |
-| `JWT_EXPIRES_IN` | JWT token expiration time | `7d` |
-| `PORT` | Server port | `3000` |
-| `NODE_ENV` | Environment (development/production/test) | `development` |
-| `RATE_LIMIT_ENABLED` | Enable/disable rate limiting | `true` |
-| `RATE_LIMIT_AUTH_MAX` | Max requests per window for auth endpoints | `5` |
-| `RATE_LIMIT_API_MAX` | Max requests per window for API endpoints | `100` |
-| `RATE_LIMIT_GLOBAL_MAX` | Global max requests per window | `200` |
-| `RATE_LIMIT_WINDOW_MS` | Rate limit window in milliseconds | `900000` (15 min) |
+| Variable                | Description                                | Default                      |
+| ----------------------- | ------------------------------------------ | ---------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string               | Required                     |
+| `TEST_DATABASE_URL`     | Test database connection string            | Required                     |
+| `JWT_SECRET`            | Secret key for JWT token signing           | Required                     |
+| `JWT_EXPIRES_IN`        | JWT token expiration time                  | `7d`                         |
+| `PORT`                  | Server port                                | `3000`                       |
+| `NODE_ENV`              | Environment (development/production/test)  | `development`                |
+| `LOG_LEVEL`             | Logging level (error/warn/info/debug)      | `info` (prod), `debug` (dev) |
+| `RATE_LIMIT_ENABLED`    | Enable/disable rate limiting               | `true`                       |
+| `RATE_LIMIT_AUTH_MAX`   | Max requests per window for auth endpoints | `5`                          |
+| `RATE_LIMIT_API_MAX`    | Max requests per window for API endpoints  | `100`                        |
+| `RATE_LIMIT_GLOBAL_MAX` | Global max requests per window             | `200`                        |
+| `RATE_LIMIT_WINDOW_MS`  | Rate limit window in milliseconds          | `900000` (15 min)            |
+
+### Logging
+
+The application uses **pino** for high-performance structured logging. Logs are automatically configured based on the environment:
+
+-   **Development**: Pretty-printed, human-readable logs with colors and timestamps
+-   **Production**: Structured JSON logs optimized for log aggregation systems (e.g., ELK, Datadog, CloudWatch)
+
+#### Log Levels
+
+Configure log verbosity using the `LOG_LEVEL` environment variable:
+
+-   `error` - Only error logs
+-   `warn` - Warnings and errors
+-   `info` - Informational messages, warnings, and errors (default for production)
+-   `debug` - Verbose logging including debug information (default for development)
+
+#### Request ID
+
+Every request automatically receives a unique `requestId` (UUID) that:
+
+-   Is included in all log entries for request tracing
+-   Is returned in the `X-Request-Id` response header
+-   Can be used for distributed tracing and log correlation
+
+Example log entry (production):
+
+```json
+{
+    "level": 30,
+    "time": "2024-01-15T10:30:45.123Z",
+    "msg": "Task created successfully",
+    "requestId": "550e8400-e29b-41d4-a716-446655440000",
+    "userId": "user-uuid-here",
+    "endpoint": "/projects/123/tasks",
+    "method": "POST"
+}
+```
+
+#### Error Logging
+
+Errors are logged with full context including:
+
+-   Request ID
+-   User ID (if authenticated)
+-   Endpoint and HTTP method
+-   Full error stack traces
+-   Error name and code (if available)
+
+Sensitive data (passwords, tokens, secrets) is never logged.
 
 ### Production Configuration
 
 For the production environment at [https://canario-disruptica-tm-api.qmono1.easypanel.host/](https://canario-disruptica-tm-api.qmono1.easypanel.host/), ensure all environment variables are properly configured according to your hosting platform requirements.
 
 **Important Security Notes:**
-- Use a strong, random `JWT_SECRET` in production
-- Set `NODE_ENV=production`
-- Use environment-specific database URLs
-- Review rate limiting settings based on expected traffic
+
+-   Use a strong, random `JWT_SECRET` in production
+-   Set `NODE_ENV=production`
+-   Use environment-specific database URLs
+-   Review rate limiting settings based on expected traffic
+-   Set `LOG_LEVEL=info` in production for optimal performance
 
 ## 🏃 Running the Application
 
@@ -254,10 +309,11 @@ Interactive API documentation is available via Swagger UI:
 **OpenAPI JSON**: `http://localhost:3000/api-docs.json`
 
 The Swagger UI provides:
-- Complete API endpoint documentation
-- Request/response schemas
-- Interactive API testing
-- Authentication support
+
+-   Complete API endpoint documentation
+-   Request/response schemas
+-   Interactive API testing
+-   Authentication support
 
 ### Quick Start Example
 
@@ -285,15 +341,16 @@ curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/auth/login 
 ```
 
 Response:
+
 ```json
 {
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "role": "member"
-  },
-  "token": "your-jwt-token-here"
+    "user": {
+        "id": "uuid",
+        "email": "user@example.com",
+        "name": "John Doe",
+        "role": "member"
+    },
+    "token": "your-jwt-token-here"
 }
 ```
 
@@ -310,68 +367,71 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
 
 ### Authentication
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/register` | Register a new user | No |
-| POST | `/auth/login` | Login and get JWT token | No |
-| GET | `/auth/me` | Get current user info | Yes |
+| Method | Endpoint         | Description             | Auth Required |
+| ------ | ---------------- | ----------------------- | ------------- |
+| POST   | `/auth/register` | Register a new user     | No            |
+| POST   | `/auth/login`    | Login and get JWT token | No            |
+| GET    | `/auth/me`       | Get current user info   | Yes           |
 
 **Rate Limit**: Auth endpoints have stricter rate limiting (5 requests per 15 minutes by default)
 
 ### Users
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/users` | Get all users (with pagination, filtering, search) | Yes |
-| GET | `/users/:id` | Get user by ID | Yes |
+| Method | Endpoint     | Description                                        | Auth Required |
+| ------ | ------------ | -------------------------------------------------- | ------------- |
+| GET    | `/users`     | Get all users (with pagination, filtering, search) | Yes           |
+| GET    | `/users/:id` | Get user by ID                                     | Yes           |
 
 **Query Parameters** (for GET `/users`):
-- `page`, `limit` - Pagination
-- `search` - Search in name and email (case-insensitive)
-- `name`, `email`, `role` - Filter by exact values
-- `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
-- `sortBy`, `sortOrder` - Sorting options
-- `fields` - Select specific fields to include
+
+-   `page`, `limit` - Pagination
+-   `search` - Search in name and email (case-insensitive)
+-   `name`, `email`, `role` - Filter by exact values
+-   `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
+-   `sortBy`, `sortOrder` - Sorting options
+-   `fields` - Select specific fields to include
 
 ### Projects
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/projects` | Create a new project | Yes |
-| GET | `/projects` | Get all user's projects (with filtering, pagination) | Yes |
-| GET | `/projects/:id` | Get project by ID | Yes |
-| PUT | `/projects/:id` | Update project | Yes (Owner only) |
-| DELETE | `/projects/:id` | Delete project | Yes (Owner only) |
-| POST | `/projects/:id/members` | Add member to project | Yes (Owner only) |
-| DELETE | `/projects/:id/members/:userId` | Remove member from project | Yes (Owner only) |
+| Method | Endpoint                        | Description                                          | Auth Required    |
+| ------ | ------------------------------- | ---------------------------------------------------- | ---------------- |
+| POST   | `/projects`                     | Create a new project                                 | Yes              |
+| GET    | `/projects`                     | Get all user's projects (with filtering, pagination) | Yes              |
+| GET    | `/projects/:id`                 | Get project by ID                                    | Yes              |
+| PUT    | `/projects/:id`                 | Update project                                       | Yes (Owner only) |
+| DELETE | `/projects/:id`                 | Delete project                                       | Yes (Owner only) |
+| POST   | `/projects/:id/members`         | Add member to project                                | Yes (Owner only) |
+| DELETE | `/projects/:id/members/:userId` | Remove member from project                           | Yes (Owner only) |
 
 **Query Parameters** (for GET `/projects`):
-- `page`, `limit` - Pagination
-- `include` - Include relations (owner, members, tasks)
-- `search` - Search in name and description
-- `name`, `ownerId` - Filter by exact values
-- `createdAfter`, `createdBefore` - Date filters
-- `sortBy`, `sortOrder` - Sorting options
+
+-   `page`, `limit` - Pagination
+-   `include` - Include relations (owner, members, tasks)
+-   `search` - Search in name and description
+-   `name`, `ownerId` - Filter by exact values
+-   `createdAfter`, `createdBefore` - Date filters
+-   `sortBy`, `sortOrder` - Sorting options
 
 ### Tasks
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/projects/:projectId/tasks` | Create a task in a project | Yes |
-| GET | `/projects/:projectId/tasks` | Get all tasks in project | Yes |
-| GET | `/tasks/:id` | Get task by ID | Yes |
-| PUT | `/tasks/:id` | Update task | Yes |
-| DELETE | `/tasks/:id` | Delete task | Yes |
+| Method | Endpoint                     | Description                | Auth Required |
+| ------ | ---------------------------- | -------------------------- | ------------- |
+| POST   | `/projects/:projectId/tasks` | Create a task in a project | Yes           |
+| GET    | `/projects/:projectId/tasks` | Get all tasks in project   | Yes           |
+| GET    | `/tasks/:id`                 | Get task by ID             | Yes           |
+| PUT    | `/tasks/:id`                 | Update task                | Yes           |
+| DELETE | `/tasks/:id`                 | Delete task                | Yes           |
 
 **Query Parameters** (for GET `/projects/:projectId/tasks`):
-- `page`, `limit` - Pagination
-- `search` - Search in title and description
-- `title`, `status`, `priority` - Filter by exact values
-- `assignedToId`, `createdById` - Filter by user IDs
-- `unassigned` - Filter for assigned/unassigned tasks (true/false)
-- `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
-- `sortBy`, `sortOrder` - Sorting options (title, status, priority, createdAt, updatedAt)
-- `include` - Include relations (comments, project, assignedTo, createdBy)
+
+-   `page`, `limit` - Pagination
+-   `search` - Search in title and description
+-   `title`, `status`, `priority` - Filter by exact values
+-   `assignedToId`, `createdById` - Filter by user IDs
+-   `unassigned` - Filter for assigned/unassigned tasks (true/false)
+-   `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
+-   `sortBy`, `sortOrder` - Sorting options (title, status, priority, createdAt, updatedAt)
+-   `include` - Include relations (comments, project, assignedTo, createdBy)
 
 **Task Status Values**: `todo`, `in-progress`, `done` (customizable)
 
@@ -379,21 +439,22 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
 
 ### Comments
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/tasks/:taskId/comments` | Create a comment on a task | Yes |
-| GET | `/tasks/:taskId/comments` | Get all comments for a task | Yes |
-| GET | `/comments/:id` | Get comment by ID | Yes |
-| DELETE | `/comments/:id` | Delete comment | Yes (Author only) |
+| Method | Endpoint                  | Description                 | Auth Required     |
+| ------ | ------------------------- | --------------------------- | ----------------- |
+| POST   | `/tasks/:taskId/comments` | Create a comment on a task  | Yes               |
+| GET    | `/tasks/:taskId/comments` | Get all comments for a task | Yes               |
+| GET    | `/comments/:id`           | Get comment by ID           | Yes               |
+| DELETE | `/comments/:id`           | Delete comment              | Yes (Author only) |
 
 **Query Parameters** (for GET `/tasks/:taskId/comments`):
-- `page`, `limit` - Pagination
-- `search` - Search in comment content
-- `authorId` - Filter by author user ID
-- `myComments` - Filter by current user (true/false)
-- `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
-- `sortBy`, `sortOrder` - Sorting options (createdAt, updatedAt)
-- `include` - Include relations (task, author)
+
+-   `page`, `limit` - Pagination
+-   `search` - Search in comment content
+-   `authorId` - Filter by author user ID
+-   `myComments` - Filter by current user (true/false)
+-   `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` - Date filters
+-   `sortBy`, `sortOrder` - Sorting options (createdAt, updatedAt)
+-   `include` - Include relations (task, author)
 
 ## 🧪 Testing
 
@@ -406,11 +467,12 @@ npm test
 The tests use a separate test database (`TEST_DATABASE_URL`). Make sure it's configured in your `.env` file.
 
 Tests are located in the `tests/` directory and include:
-- Authentication tests
-- Project management tests
-- Task management tests
-- Comment tests
-- Rate limiter tests
+
+-   Authentication tests
+-   Project management tests
+-   Task management tests
+-   Comment tests
+-   Rate limiter tests
 
 ## 📁 Project Structure
 
@@ -496,17 +558,19 @@ docker run -p 3000:3000 --env-file .env disruptica-task-manager
 ### Environment-Specific Configuration
 
 Ensure production environment variables are set:
-- Strong `JWT_SECRET`
-- Production `DATABASE_URL`
-- Appropriate `PORT`
-- Rate limiting configured for production load
-- `NODE_ENV=production`
+
+-   Strong `JWT_SECRET`
+-   Production `DATABASE_URL`
+-   Appropriate `PORT`
+-   Rate limiting configured for production load
+-   `NODE_ENV=production`
 
 ### Health Checks
 
 The production API is available at:
-- Base URL: [https://canario-disruptica-tm-api.qmono1.easypanel.host/](https://canario-disruptica-tm-api.qmono1.easypanel.host/)
-- Documentation: [https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs](https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs)
+
+-   Base URL: [https://canario-disruptica-tm-api.qmono1.easypanel.host/](https://canario-disruptica-tm-api.qmono1.easypanel.host/)
+-   Documentation: [https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs](https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs)
 
 ## 🐛 Troubleshooting
 
@@ -515,75 +579,81 @@ The production API is available at:
 **Problem**: Cannot connect to PostgreSQL
 
 **Solutions**:
-- Verify PostgreSQL is running: `pg_isready`
-- Check `DATABASE_URL` format in `.env`
-- Ensure database exists: `psql -l`
-- Verify network connectivity and firewall rules
-- Check PostgreSQL logs for connection errors
+
+-   Verify PostgreSQL is running: `pg_isready`
+-   Check `DATABASE_URL` format in `.env`
+-   Ensure database exists: `psql -l`
+-   Verify network connectivity and firewall rules
+-   Check PostgreSQL logs for connection errors
 
 ### Migration Issues
 
 **Problem**: Migration fails or Prisma Client not generated
 
 **Solutions**:
-- Generate Prisma Client: `npm run prisma:generate`
-- Check migration status: `npx prisma migrate status`
-- Reset database (dev only): `npx prisma migrate reset`
-- Verify database connection string
-- Check for pending migrations: `npx prisma migrate dev`
+
+-   Generate Prisma Client: `npm run prisma:generate`
+-   Check migration status: `npx prisma migrate status`
+-   Reset database (dev only): `npx prisma migrate reset`
+-   Verify database connection string
+-   Check for pending migrations: `npx prisma migrate dev`
 
 ### Port Already in Use
 
 **Problem**: Port 3000 is already in use
 
 **Solutions**:
-- Change `PORT` in `.env` file
-- Find and kill the process: `lsof -ti:3000 | xargs kill`
-- Use a different port: `PORT=3001 npm run dev`
+
+-   Change `PORT` in `.env` file
+-   Find and kill the process: `lsof -ti:3000 | xargs kill`
+-   Use a different port: `PORT=3001 npm run dev`
 
 ### Authentication Errors
 
 **Problem**: JWT token invalid or expired
 
 **Solutions**:
-- Verify `JWT_SECRET` matches the one used to create the token
-- Check token expiration (`JWT_EXPIRES_IN`)
-- Ensure token is sent in `Authorization: Bearer <token>` header
-- Verify token format (no extra spaces or quotes)
+
+-   Verify `JWT_SECRET` matches the one used to create the token
+-   Check token expiration (`JWT_EXPIRES_IN`)
+-   Ensure token is sent in `Authorization: Bearer <token>` header
+-   Verify token format (no extra spaces or quotes)
 
 ### Rate Limiting Issues
 
 **Problem**: Getting 429 Too Many Requests errors
 
 **Solutions**:
-- Check rate limit configuration in `.env`
-- Verify `RATE_LIMIT_WINDOW_MS` is set correctly
-- Adjust limits based on your use case
-- Implement exponential backoff in client applications
+
+-   Check rate limit configuration in `.env`
+-   Verify `RATE_LIMIT_WINDOW_MS` is set correctly
+-   Adjust limits based on your use case
+-   Implement exponential backoff in client applications
 
 ### TypeScript Compilation Errors
 
 **Problem**: Type errors during build
 
 **Solutions**:
-- Run `npm run prisma:generate` to update Prisma types
-- Check `tsconfig.json` configuration
-- Ensure all dependencies are installed: `npm install`
-- Clear build directory: `rm -rf dist`
+
+-   Run `npm run prisma:generate` to update Prisma types
+-   Check `tsconfig.json` configuration
+-   Ensure all dependencies are installed: `npm install`
+-   Clear build directory: `rm -rf dist`
 
 ## 📝 Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with hot-reload (tsx watch) |
-| `npm run build` | Build TypeScript for production |
-| `npm start` | Start production server (requires build first) |
-| `npm test` | Run test suite with Jest |
-| `npm run prisma:generate` | Generate Prisma Client |
-| `npm run prisma:migrate` | Run database migrations (development) |
-| `npm run prisma:migrate:deploy` | Deploy migrations (production) |
-| `npm run prisma:seed` | Seed the database with sample data |
-| `npm run prisma:studio` | Open Prisma Studio GUI for database management |
+| Script                          | Description                                          |
+| ------------------------------- | ---------------------------------------------------- |
+| `npm run dev`                   | Start development server with hot-reload (tsx watch) |
+| `npm run build`                 | Build TypeScript for production                      |
+| `npm start`                     | Start production server (requires build first)       |
+| `npm test`                      | Run test suite with Jest                             |
+| `npm run prisma:generate`       | Generate Prisma Client                               |
+| `npm run prisma:migrate`        | Run database migrations (development)                |
+| `npm run prisma:migrate:deploy` | Deploy migrations (production)                       |
+| `npm run prisma:seed`           | Seed the database with sample data                   |
+| `npm run prisma:studio`         | Open Prisma Studio GUI for database management       |
 
 ## 📄 License
 
@@ -602,13 +672,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📞 Support
 
 For support and questions:
-- Check the [API Documentation](https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs)
-- Review the [Database Schema Diagram](https://dbdiagram.io/d/disruptica-696958add6e030a02430399f)
-- Open an issue on GitHub
+
+-   Check the [API Documentation](https://canario-disruptica-tm-api.qmono1.easypanel.host/api-docs)
+-   Review the [Database Schema Diagram](https://dbdiagram.io/d/disruptica-696958add6e030a02430399f)
+-   Open an issue on GitHub
 
 ---
 
 **Built with ❤️ using Node.js, Express, TypeScript, and PostgreSQL**
 
 For detailed API documentation, visit `/api-docs` when the server is running.
-

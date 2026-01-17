@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as authService from './auth.service'
+import { createChildLogger } from '../../utils/logger'
 
 export const register = async (
     req: Request,
@@ -19,7 +20,8 @@ export const register = async (
         const result = await authService.register(req.body)
         res.status(201).json(result)
     } catch (error) {
-        console.log('error', error)
+        const logger = createChildLogger({ requestId: req.requestId })
+        logger.error({ err: error }, 'Registration error')
         next(error)
     }
 }

@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import dotenv from 'dotenv';
+import { logger } from '../src/utils/logger';
 
 dotenv.config();
 
@@ -36,7 +37,7 @@ beforeAll(async () => {
       stdio: 'inherit',
     });
   } catch (error) {
-    console.error('Migration failed:', error);
+    logger.error({ err: error }, 'Migration failed');
     throw error;
   }
 });

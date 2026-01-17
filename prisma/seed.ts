@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/utils/password';
 import dotenv from 'dotenv';
+import { logger } from '../src/utils/logger';
 
 dotenv.config();
 
@@ -69,17 +70,17 @@ async function main() {
     },
   });
 
-  console.log('Seed data created:', {
+  logger.info({
     owner: owner.email,
     member: member.email,
     project: project.name,
     task: task.title,
-  });
+  }, 'Seed data created');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    logger.error({ err: e }, 'Seed script failed');
     process.exit(1);
   })
   .finally(async () => {

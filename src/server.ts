@@ -1,19 +1,20 @@
 import app from './app';
 import { env } from './config/env';
+import { logger } from './utils/logger';
 
 /**
  * Application entry point.
  * Starts the HTTP server and handles graceful shutdown on SIGTERM.
  */
 const server = app.listen(env.PORT, () => {
-  console.log(`Server is running on port ${env.PORT}`);
+  logger.info({ port: env.PORT }, 'Server is running');
 });
 
 // Graceful shutdown handler for containerized deployments (e.g., Docker, Kubernetes)
 process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
+  logger.info('SIGTERM signal received: closing HTTP server');
   server.close(() => {
-    console.log('HTTP server closed');
+    logger.info('HTTP server closed');
   });
 });
 

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
+import { createChildLogger } from '../utils/logger'
 
 /**
  * Global error handling middleware.
@@ -10,10 +11,17 @@ import { Prisma } from '@prisma/client'
  */
 export function errorMiddleware(
     error: Error,
-    _req: Request,
+    req: Request,
     res: Response,
     _next: NextFunction
 ): Response | void {
+    // Create child logger with request context
+    const requestLogger = createChildLogger({
+        requestId: req.requestId,
+        userId: (req as any).user?.userId,
+        endpoint: req.path,
+        method: req.method,
+    })
     // Zod validation errors - transform into user-friendly messages
     if (error instanceof ZodError) {
         const errorMessages = error.errors.map((e) => {
@@ -141,7 +149,16 @@ export function errorMiddleware(
     }
 
     // Unhandled errors - log for debugging but don't expose details to client
-    console.error('Unhandled error:', error)
+    // Log full error details including stack trace for server errors
+    requestLogger.error(
+        {
+            err: error,
+            errorName: error.name,
+            errorMessage: error.message,
+            errorCode: (error as any).code,
+        },
+        'Unhandled error'
+    )
 
     return res.status(500).json({
         error: {

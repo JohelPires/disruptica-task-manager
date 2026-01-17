@@ -7,9 +7,13 @@ import taskRoutes from './modules/tasks/task.routes';
 import commentRoutes from './modules/comments/comment.routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { globalRateLimiter } from './middlewares/rateLimiter.middleware';
+import { requestIdMiddleware } from './middlewares/requestId.middleware';
 import { swaggerSpec } from './config/swagger';
 
 const app = express();
+
+// Request ID middleware must be first to ensure all logs have requestId
+app.use(requestIdMiddleware);
 
 app.use(express.json());
 
