@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { TaskService } from './task.service'
-
-const taskService = new TaskService()
+import * as taskService from './task.service'
 
 export const create = async (
     req: Request,

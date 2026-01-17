@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { CommentService } from './comment.service'
-
-const commentService = new CommentService()
+import * as commentService from './comment.service'
 
 export const create = async (
     req: Request,
