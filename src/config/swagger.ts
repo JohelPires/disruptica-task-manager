@@ -1,5 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 import { env } from './env'
+import path from 'path'
 
 const options: swaggerJsdoc.Options = {
     definition: {
@@ -458,12 +459,12 @@ const options: swaggerJsdoc.Options = {
     apis:
         env.NODE_ENV === 'production'
             ? [
-                  './dist/modules/**/*.routes.js',
-                  './dist/modules/**/*.controller.js',
+                  path.join(process.cwd(), 'dist/modules/**/*.routes.js'),
+                  path.join(process.cwd(), 'dist/modules/**/*.controller.js'),
               ]
             : [
-                  './src/modules/**/*.routes.ts',
-                  './src/modules/**/*.controller.ts',
+                  path.join(process.cwd(), 'src/modules/**/*.routes.ts'),
+                  path.join(process.cwd(), 'src/modules/**/*.controller.ts'),
               ],
 }
 
