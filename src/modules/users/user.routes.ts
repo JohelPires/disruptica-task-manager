@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as userController from './user.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
+import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
 
 const router = Router();
 
@@ -66,7 +67,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/', requireAuth, userController.getAll);
+router.get('/', apiRateLimiter, requireAuth, userController.getAll);
 
 /**
  * @swagger
@@ -107,7 +108,7 @@ router.get('/', requireAuth, userController.getAll);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requireAuth, userController.getById);
+router.get('/:id', apiRateLimiter, requireAuth, userController.getById);
 
 export default router;
 

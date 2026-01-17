@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as projectController from './project.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 import { requireProjectOwner } from '../../middlewares/project-owner.middleware';
+import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/', requireAuth, projectController.create);
+router.post('/', apiRateLimiter, requireAuth, projectController.create);
 
 /**
  * @swagger
@@ -78,7 +79,7 @@ router.post('/', requireAuth, projectController.create);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/', requireAuth, projectController.getAll);
+router.get('/', apiRateLimiter, requireAuth, projectController.getAll);
 
 /**
  * @swagger
@@ -125,7 +126,7 @@ router.get('/', requireAuth, projectController.getAll);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requireAuth, projectController.getById);
+router.get('/:id', apiRateLimiter, requireAuth, projectController.getById);
 
 /**
  * @swagger
@@ -178,7 +179,7 @@ router.get('/:id', requireAuth, projectController.getById);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put('/:id', requireAuth, requireProjectOwner, projectController.update);
+router.put('/:id', apiRateLimiter, requireAuth, requireProjectOwner, projectController.update);
 
 /**
  * @swagger
@@ -218,7 +219,7 @@ router.put('/:id', requireAuth, requireProjectOwner, projectController.update);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/:id', requireAuth, requireProjectOwner, projectController.deleteProject);
+router.delete('/:id', apiRateLimiter, requireAuth, requireProjectOwner, projectController.deleteProject);
 
 /**
  * @swagger
@@ -271,7 +272,7 @@ router.delete('/:id', requireAuth, requireProjectOwner, projectController.delete
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/:id/members', requireAuth, requireProjectOwner, projectController.addMember);
+router.post('/:id/members', apiRateLimiter, requireAuth, requireProjectOwner, projectController.addMember);
 
 /**
  * @swagger
@@ -318,7 +319,7 @@ router.post('/:id/members', requireAuth, requireProjectOwner, projectController.
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/:id/members/:userId', requireAuth, requireProjectOwner, projectController.removeMember);
+router.delete('/:id/members/:userId', apiRateLimiter, requireAuth, requireProjectOwner, projectController.removeMember);
 
 export default router;
 

@@ -6,11 +6,15 @@ import projectRoutes from './modules/projects/project.routes';
 import taskRoutes from './modules/tasks/task.routes';
 import commentRoutes from './modules/comments/comment.routes';
 import { errorMiddleware } from './middlewares/error.middleware';
+import { globalRateLimiter } from './middlewares/rateLimiter.middleware';
 import { swaggerSpec } from './config/swagger';
 
 const app = express();
 
 app.use(express.json());
+
+// Global rate limiter (catch-all for all endpoints)
+app.use(globalRateLimiter);
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {

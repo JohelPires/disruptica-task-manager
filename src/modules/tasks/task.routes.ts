@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as taskController from './task.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
+import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
 
 const router = Router();
 
@@ -61,7 +62,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/projects/:projectId/tasks', requireAuth, taskController.create);
+router.post('/projects/:projectId/tasks', apiRateLimiter, requireAuth, taskController.create);
 
 /**
  * @swagger
@@ -110,7 +111,7 @@ router.post('/projects/:projectId/tasks', requireAuth, taskController.create);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/projects/:projectId/tasks', requireAuth, taskController.getByProject);
+router.get('/projects/:projectId/tasks', apiRateLimiter, requireAuth, taskController.getByProject);
 
 /**
  * @swagger
@@ -157,7 +158,7 @@ router.get('/projects/:projectId/tasks', requireAuth, taskController.getByProjec
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/tasks/:id', requireAuth, taskController.getById);
+router.get('/tasks/:id', apiRateLimiter, requireAuth, taskController.getById);
 
 /**
  * @swagger
@@ -210,7 +211,7 @@ router.get('/tasks/:id', requireAuth, taskController.getById);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put('/tasks/:id', requireAuth, taskController.update);
+router.put('/tasks/:id', apiRateLimiter, requireAuth, taskController.update);
 
 /**
  * @swagger
@@ -250,7 +251,7 @@ router.put('/tasks/:id', requireAuth, taskController.update);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/tasks/:id', requireAuth, taskController.deleteTask);
+router.delete('/tasks/:id', apiRateLimiter, requireAuth, taskController.deleteTask);
 
 export default router;
 

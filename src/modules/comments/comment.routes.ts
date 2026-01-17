@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as commentController from './comment.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
+import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
 
 const router = Router();
 
@@ -61,7 +62,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/tasks/:taskId/comments', requireAuth, commentController.create);
+router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentController.create);
 
 /**
  * @swagger
@@ -110,7 +111,7 @@ router.post('/tasks/:taskId/comments', requireAuth, commentController.create);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/tasks/:taskId/comments', requireAuth, commentController.getByTask);
+router.get('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentController.getByTask);
 
 /**
  * @swagger
@@ -150,7 +151,7 @@ router.get('/tasks/:taskId/comments', requireAuth, commentController.getByTask);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/comments/:id', requireAuth, commentController.deleteComment);
+router.delete('/comments/:id', apiRateLimiter, requireAuth, commentController.deleteComment);
 
 export default router;
 
