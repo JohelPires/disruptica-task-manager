@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import * as commentController from './comment.controller';
-import { requireAuth } from '../../middlewares/auth.middleware';
-import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
+import { Router } from 'express'
+import * as commentController from './comment.controller'
+import { requireAuth } from '../../middlewares/auth.middleware'
+import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware'
 
-const router = Router();
+const router = Router()
 
 /**
  * @swagger
@@ -62,7 +62,12 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentController.create);
+router.post(
+    '/tasks/:taskId/comments',
+    apiRateLimiter,
+    requireAuth,
+    commentController.create
+)
 
 /**
  * @swagger
@@ -154,7 +159,7 @@ router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentContr
  *         name: include
  *         schema:
  *           type: string
- *         description: Comma-separated list of relations to include (valid values: "task", "author"). By default, "author" is included. Use this parameter to selectively include/exclude relations (e.g., "task,author" or "task").
+ *         description: 'Comma-separated list of relations to include (valid values: "task", "author"). By default, "author" is included. Use this parameter to selectively include/exclude relations (e.g., "task,author" or "task").'
  *     responses:
  *       200:
  *         description: Comments retrieved successfully
@@ -197,7 +202,12 @@ router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentContr
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentController.getByTask);
+router.get(
+    '/tasks/:taskId/comments',
+    apiRateLimiter,
+    requireAuth,
+    commentController.getByTask
+)
 
 /**
  * @swagger
@@ -237,7 +247,11 @@ router.get('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentContro
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/comments/:id', apiRateLimiter, requireAuth, commentController.deleteComment);
+router.delete(
+    '/comments/:id',
+    apiRateLimiter,
+    requireAuth,
+    commentController.deleteComment
+)
 
-export default router;
-
+export default router

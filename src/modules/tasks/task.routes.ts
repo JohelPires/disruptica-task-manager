@@ -184,7 +184,7 @@ router.post('/projects/:projectId/tasks', apiRateLimiter, requireAuth, taskContr
  *         name: include
  *         schema:
  *           type: string
- *         description: Comma-separated list of relations to include (valid values: comments, project, assignedTo, createdBy). Default includes: project, assignedTo, createdBy
+ *         description: 'Comma-separated list of relations to include (valid values: comments, project, assignedTo, createdBy). Default includes: project, assignedTo, createdBy'
  *         example: "comments,project,assignedTo,createdBy"
  *     responses:
  *       200:
