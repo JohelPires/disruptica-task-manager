@@ -33,12 +33,37 @@ export const getByTask = async (
         const userRole = (req as any).user.role
         const page = parseInt(req.query.page as string) || 1
         const limit = parseInt(req.query.limit as string) || 10
+
+        // Extract query parameters
+        const search = req.query.search as string | undefined
+        const authorId = req.query.authorId as string | undefined
+        const myComments = req.query.myComments as string | undefined
+        const createdAfter = req.query.createdAfter as string | undefined
+        const createdBefore = req.query.createdBefore as string | undefined
+        const updatedAfter = req.query.updatedAfter as string | undefined
+        const updatedBefore = req.query.updatedBefore as string | undefined
+        const sortBy = req.query.sortBy as string | undefined
+        const sortOrder = req.query.sortOrder as string | undefined
+        const include = req.query.include as string | undefined
+
         const result = await commentService.getCommentsByTask(
             taskId,
             userId,
             userRole,
-            page,
-            limit
+            {
+                page,
+                limit,
+                search,
+                authorId,
+                myComments,
+                createdAfter,
+                createdBefore,
+                updatedAfter,
+                updatedBefore,
+                sortBy,
+                sortOrder,
+                include,
+            }
         )
         res.json({
             comments: result.data,

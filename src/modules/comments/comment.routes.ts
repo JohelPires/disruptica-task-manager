@@ -80,6 +80,81 @@ router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentContr
  *           type: string
  *           format: uuid
  *         description: Task ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of comments per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter comments by content (case-insensitive partial match)
+ *       - in: query
+ *         name: authorId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter comments by author user ID
+ *       - in: query
+ *         name: myComments
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: Filter comments by current authenticated user (true = only my comments, false = exclude my comments). Takes precedence over authorId if both are provided.
+ *       - in: query
+ *         name: createdAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter comments created after this ISO 8601 date
+ *       - in: query
+ *         name: createdBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter comments created before this ISO 8601 date
+ *       - in: query
+ *         name: updatedAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter comments updated after this ISO 8601 date
+ *       - in: query
+ *         name: updatedBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter comments updated before this ISO 8601 date
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt]
+ *           default: createdAt
+ *         description: Field to sort by (createdAt or updatedAt). Defaults to createdAt if invalid value provided.
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort direction (asc or desc). Defaults to asc if invalid value provided.
+ *       - in: query
+ *         name: include
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of relations to include (valid values: "task", "author"). By default, "author" is included. Use this parameter to selectively include/exclude relations (e.g., "task,author" or "task").
  *     responses:
  *       200:
  *         description: Comments retrieved successfully
@@ -92,6 +167,17 @@ router.post('/tasks/:taskId/comments', apiRateLimiter, requireAuth, commentContr
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Comment'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
  *       401:
  *         description: Authentication required
  *         content:
