@@ -34,6 +34,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/openapi.yaml ./openapi.yaml
 
 RUN addgroup -S nodejs -g 1001 \
   && adduser -S nodejs -u 1001 -G nodejs
