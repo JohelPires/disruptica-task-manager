@@ -13,6 +13,12 @@ const options: swaggerJsdoc.Options = {
       },
     },
     servers: [
+      // Production/server URL from environment (if provided)
+      ...(process.env.API_BASE_URL ? [{
+        url: process.env.API_BASE_URL,
+        description: 'Production server',
+      }] : []),
+      // Development server (always include for local development)
       {
         url: `http://localhost:${env.PORT}`,
         description: 'Development server',

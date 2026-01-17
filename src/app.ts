@@ -9,8 +9,13 @@ import { errorMiddleware } from './middlewares/error.middleware';
 import { globalRateLimiter } from './middlewares/rateLimiter.middleware';
 import { requestIdMiddleware } from './middlewares/requestId.middleware';
 import { swaggerSpec } from './config/swagger';
+import { env } from './config/env';
 
 const app = express();
+
+// Trust proxy - required when behind reverse proxy (nginx, load balancer, etc.)
+// This allows express-rate-limit to correctly identify client IPs from X-Forwarded-For header
+app.set('trust proxy', env.TRUST_PROXY !== 'false');
 
 // Request ID middleware must be first to ensure all logs have requestId
 app.use(requestIdMiddleware);

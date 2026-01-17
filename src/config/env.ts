@@ -15,6 +15,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   // Logging configuration
   LOG_LEVEL: process.env.LOG_LEVEL,
+  // Proxy configuration
+  TRUST_PROXY: process.env.TRUST_PROXY,
   // Rate limiting configuration
   // Enabled by default unless explicitly set to 'false' (allows opt-out for testing)
   RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED !== 'false',
