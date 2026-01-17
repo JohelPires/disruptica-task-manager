@@ -18,6 +18,12 @@ const loginSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 
+/**
+ * Registers a new user and returns an authentication token.
+ * 
+ * Validates input, checks for existing email, hashes password, and creates user.
+ * Defaults role to 'member' if not specified. Password is never returned in response.
+ */
 export const register = async (data: RegisterInput) => {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid request data');
@@ -42,6 +48,7 @@ export const register = async (data: RegisterInput) => {
       name: validated.name,
       role: validated.role || 'member',
     },
+    // Explicitly exclude sensitive fields from response
     select: {
       id: true,
       email: true,
@@ -60,6 +67,12 @@ export const register = async (data: RegisterInput) => {
   return { user, token };
 };
 
+/**
+ * Authenticates a user and returns an authentication token.
+ * 
+ * Validates credentials without revealing which field is incorrect (security best practice).
+ * Throws generic error message if email or password is invalid to prevent user enumeration.
+ */
 export const login = async (data: LoginInput) => {
   const validated = loginSchema.parse(data);
 
@@ -95,6 +108,10 @@ export const login = async (data: LoginInput) => {
   };
 };
 
+/**
+ * Retrieves the current authenticated user's information.
+ * Used by the /auth/me endpoint to return user context.
+ */
 export const getMe = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },

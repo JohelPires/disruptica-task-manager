@@ -9,6 +9,12 @@ export interface AuthRequest extends Request {
   };
 }
 
+/**
+ * Authentication middleware that validates JWT tokens from Authorization header.
+ * 
+ * Extracts Bearer token, verifies it, and attaches user information to the request.
+ * Returns 401 if token is missing, invalid, or expired.
+ */
 export function requireAuth(req: Request, res: Response, next: NextFunction): Response | void {
   try {
     const authHeader = req.headers.authorization;
@@ -22,9 +28,11 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): Re
       });
     }
 
+    // Extract token by removing 'Bearer ' prefix
     const token = authHeader.substring(7);
     const payload = verifyToken(token);
 
+    // Attach user context to request for downstream middleware/handlers
     (req as AuthRequest).user = {
       userId: payload.userId,
       email: payload.email,

@@ -8,6 +8,12 @@ const createCommentSchema = z.object({
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 
+/**
+ * Creates a comment on a task.
+ * 
+ * Verifies task exists and user has access to the project before allowing comment creation.
+ * Automatically associates the comment with the authenticated user as the author.
+ */
 export async function createComment(taskId: string, data: CreateCommentInput, userId: string, userRole: string) {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
@@ -17,6 +23,7 @@ export async function createComment(taskId: string, data: CreateCommentInput, us
     throw new Error('Task not found');
   }
 
+  // Ensure user has access to the project containing this task
   const isMember = await isProjectMember(task.projectId, userId, userRole);
   if (!isMember) {
     throw new Error('Access denied');
@@ -67,6 +74,12 @@ export interface GetCommentsByTaskOptions {
   include?: string;
 }
 
+/**
+ * Retrieves comments for a task with filtering, sorting, and pagination.
+ * 
+ * Verifies user has access to the project containing the task before returning comments.
+ * Supports filtering by author, date ranges, and selective relation inclusion for performance.
+ */
 export async function getCommentsByTask(
   taskId: string,
   userId: string,
@@ -96,6 +109,7 @@ export async function getCommentsByTask(
     throw new Error('Task not found');
   }
 
+  // Ensure user has access to the project containing this task
   const isMember = await isProjectMember(task.projectId, userId, userRole);
   if (!isMember) {
     throw new Error('Access denied');
@@ -113,6 +127,7 @@ export async function getCommentsByTask(
   }
 
   // My comments filter (takes precedence over authorId if both are provided)
+  // This allows users to easily filter to their own comments or exclude them
   if (myComments === 'true') {
     where.authorId = userId;
   } else if (myComments === 'false') {
@@ -173,7 +188,7 @@ export async function getCommentsByTask(
     ? (sortOrder.toLowerCase() as 'asc' | 'desc')
     : 'asc';
 
-  // Handle include relations
+  // Handle include relations - allows clients to control response size
   const includeRelations: any = {};
   
   if (include) {
@@ -203,7 +218,7 @@ export async function getCommentsByTask(
       };
     }
   } else {
-    // Default: include author
+    // Default: include author since it's commonly needed for comment display
     includeRelations.author = {
       select: {
         id: true,
@@ -240,6 +255,12 @@ export async function getCommentsByTask(
   };
 }
 
+/**
+ * Deletes a comment.
+ * 
+ * Authorization: Only the comment author or the project owner can delete a comment.
+ * This allows project owners to moderate comments while respecting individual ownership.
+ */
 export async function deleteComment(commentId: string, userId: string, userRole: string) {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
@@ -262,6 +283,7 @@ export async function deleteComment(commentId: string, userId: string, userRole:
     userRole
   );
 
+  // Allow deletion by comment author or project owner
   if (comment.authorId !== userId && !isProjectOwnerCheck) {
     throw new Error('Access denied');
   }

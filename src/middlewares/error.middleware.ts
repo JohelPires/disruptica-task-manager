@@ -2,12 +2,19 @@ import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
 
+/**
+ * Global error handling middleware.
+ *
+ * Maps application errors to appropriate HTTP status codes and standardized error responses.
+ * Handles validation errors, database errors, and business logic errors consistently.
+ */
 export function errorMiddleware(
     error: Error,
     _req: Request,
     res: Response,
     _next: NextFunction
 ): Response | void {
+    // Zod validation errors - transform into user-friendly messages
     if (error instanceof ZodError) {
         const errorMessages = error.errors.map((e) => {
             const field = e.path.length > 0 ? e.path.join('.') : 'body'
@@ -27,8 +34,10 @@ export function errorMiddleware(
         })
     }
 
+    // Prisma database errors - map known error codes to HTTP status codes
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const prismaError = error as Prisma.PrismaClientKnownRequestError
+        // P2002: Unique constraint violation
         if (prismaError.code === 'P2002') {
             return res.status(409).json({
                 error: {
@@ -38,6 +47,7 @@ export function errorMiddleware(
             })
         }
 
+        // P2025: Record not found (used in update/delete operations)
         if (prismaError.code === 'P2025') {
             return res.status(404).json({
                 error: {
@@ -47,6 +57,7 @@ export function errorMiddleware(
             })
         }
 
+        // Other Prisma errors - generic database error response
         return res.status(500).json({
             error: {
                 message: 'Database error',
@@ -55,6 +66,8 @@ export function errorMiddleware(
         })
     }
 
+    // Business logic errors - map common error messages to HTTP status codes
+    // This approach allows services to throw simple errors that get automatically mapped
     if (error.message === 'User with this email already exists') {
         return res.status(409).json({
             error: {
@@ -127,6 +140,7 @@ export function errorMiddleware(
         })
     }
 
+    // Unhandled errors - log for debugging but don't expose details to client
     console.error('Unhandled error:', error)
 
     return res.status(500).json({

@@ -21,6 +21,13 @@ const updateTaskSchema = z.object({
 export type CreateTaskInput = z.infer<typeof createTaskSchema>
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>
 
+/**
+ * Creates a new task in a project.
+ *
+ * Verifies user has access to the project before creating the task.
+ * Sets default status ('todo') and priority ('medium') if not provided.
+ * The authenticated user is automatically set as the task creator.
+ */
 export async function createTask(
     projectId: string,
     data: CreateTaskInput,
@@ -136,7 +143,7 @@ export async function getTasksByProject(
     const where: any = { projectId }
 
     // Build search where clause (case-insensitive partial match on title and description)
-    // If title filter is provided, only search in description
+    // If title filter is provided, only search in description to avoid conflicting filters
     if (search) {
         if (filters.title) {
             // If title filter exists, only search in description
@@ -176,6 +183,7 @@ export async function getTasksByProject(
         where.priority = filters.priority
     }
 
+    // Assignment filters - mutually exclusive (assignedToId takes precedence)
     if (filters.assignedToId) {
         where.assignedToId = filters.assignedToId
     } else if (filters.unassigned === true) {
@@ -229,11 +237,11 @@ export async function getTasksByProject(
     }
 
     // Build include clause with default includes (project, assignedTo, createdBy)
-    // The include parameter allows selective inclusion/exclusion
+    // The include parameter allows selective inclusion/exclusion for performance optimization
     const validIncludes = ['comments', 'project', 'assignedTo', 'createdBy']
     const includeSet = includeParams
         ? includeParams.filter((inc) => validIncludes.includes(inc))
-        : ['project', 'assignedTo', 'createdBy'] // Default includes
+        : ['project', 'assignedTo', 'createdBy'] // Default includes commonly needed fields
 
     const include: any = {}
 
@@ -300,6 +308,12 @@ export async function getTasksByProject(
     }
 }
 
+/**
+ * Retrieves a task by ID with access control.
+ *
+ * Verifies the user has access to the project containing the task before returning it.
+ * Includes related entities (project, assignedTo, createdBy) by default.
+ */
 export async function getTaskById(
     taskId: string,
     userId: string,
@@ -337,6 +351,7 @@ export async function getTaskById(
         throw new Error('Task not found')
     }
 
+    // Verify user has access to the project containing this task
     const isMember = await isProjectMember(task.projectId, userId, userRole)
     if (!isMember) {
         throw new Error('Access denied')
@@ -345,6 +360,12 @@ export async function getTaskById(
     return task
 }
 
+/**
+ * Updates a task.
+ *
+ * Verifies user has access to the project before allowing updates.
+ * All project members can update tasks (not restricted to owners).
+ */
 export async function updateTask(
     taskId: string,
     data: UpdateTaskInput,
@@ -398,6 +419,12 @@ export async function updateTask(
     return updatedTask
 }
 
+/**
+ * Deletes a task.
+ *
+ * Restricted to project owners only (not all members can delete).
+ * This prevents accidental task deletion by regular members.
+ */
 export async function deleteTask(
     taskId: string,
     userId: string,

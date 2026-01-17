@@ -20,6 +20,11 @@ export type CreateProjectInput = z.infer<typeof createProjectSchema>
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>
 export type AddMemberInput = z.infer<typeof addMemberSchema>
 
+/**
+ * Creates a new project with the authenticated user as the owner.
+ *
+ * The creator is automatically assigned as the project owner and gains full access rights.
+ */
 export async function createProject(data: CreateProjectInput, ownerId: string) {
     const validated = createProjectSchema.parse(data)
 
@@ -139,6 +144,7 @@ export async function getProjects(
     const skip = (page - 1) * limit
 
     // Build access control where clause
+    // Global 'owner' role can see all projects; regular users only see projects they own or are members of
     const accessControlWhere =
         userRole === 'owner'
             ? undefined
@@ -227,6 +233,7 @@ export async function getProjects(
     }
 
     // Build myRole filter
+    // Allows filtering projects by the authenticated user's role (owner vs member)
     if (filters.myRole) {
         if (filters.myRole === 'owner') {
             // Override ownerId filter if myRole is 'owner'
@@ -307,6 +314,12 @@ export async function getProjects(
     }
 }
 
+/**
+ * Retrieves a project by ID with access control.
+ *
+ * Global 'owner' role and project owners can always access. Other users must be project members.
+ * This ensures users can only see projects they have permission to access.
+ */
 export async function getProjectById(
     projectId: string,
     userId: string,
@@ -342,6 +355,7 @@ export async function getProjectById(
         throw new Error('Project not found')
     }
 
+    // Check access: global owner or project owner always has access
     if (userRole !== 'owner' && project.ownerId !== userId) {
         const isMember = await prisma.projectMember.findUnique({
             where: {
@@ -402,6 +416,12 @@ export async function deleteProject(projectId: string) {
     })
 }
 
+/**
+ * Adds a user as a member to a project.
+ *
+ * Validates that the user exists and is not already a member before creating the membership.
+ * The project member role can be different from the user's global role.
+ */
 export async function addMember(projectId: string, data: AddMemberInput) {
     const validated = addMemberSchema.parse(data)
 
@@ -471,6 +491,12 @@ export async function removeMember(projectId: string, userId: string) {
     })
 }
 
+/**
+ * Checks if a user is the owner of a project.
+ *
+ * Global 'owner' role is treated as owner of all projects.
+ * Used for authorization checks in other services.
+ */
 export async function isProjectOwner(
     projectId: string,
     userId: string,
@@ -488,6 +514,12 @@ export async function isProjectOwner(
     return project?.ownerId === userId
 }
 
+/**
+ * Checks if a user has access to a project (as owner or member).
+ *
+ * Global 'owner' role and project owners have access. Otherwise checks project membership.
+ * This is the primary access control function used across the application.
+ */
 export async function isProjectMember(
     projectId: string,
     userId: string,
@@ -502,6 +534,7 @@ export async function isProjectMember(
         select: { ownerId: true },
     })
 
+    // Project owner has member-level access (and more)
     if (project?.ownerId === userId) {
         return true
     }

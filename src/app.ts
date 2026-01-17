@@ -40,12 +40,15 @@ app.get('/', (_req, res) => {
   });
 });
 
+// API routes - ordered by specificity (more specific routes first)
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/projects', projectRoutes);
+// Task and comment routes use root path due to nested routing structure
 app.use('/', taskRoutes);
 app.use('/', commentRoutes);
 
+// Error handling middleware must be last to catch errors from all routes
 app.use(errorMiddleware);
 
 export default app;

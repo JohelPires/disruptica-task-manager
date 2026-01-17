@@ -20,6 +20,12 @@ type GetAllUsersOptions = {
     fields?: string
 }
 
+/**
+ * Retrieves all users with filtering, sorting, and pagination.
+ *
+ * Supports searching across name and email, field selection, and date range filtering.
+ * Useful for user management interfaces and user selection components.
+ */
 export async function getAllUsers(options: GetAllUsersOptions = {}) {
     const {
         page = 1,
@@ -138,7 +144,7 @@ export async function getAllUsers(options: GetAllUsersOptions = {}) {
         [sortBy]: sortOrder,
     }
 
-    // Build field selection
+    // Build field selection - allows clients to request only needed fields for performance
     const validFields = [
         'id',
         'name',
@@ -159,7 +165,7 @@ export async function getAllUsers(options: GetAllUsersOptions = {}) {
             .map((f) => f.trim())
             .filter((f) => validFields.includes(f))
 
-        // Always include 'id'
+        // Always include 'id' as it's required for referencing users
         if (!requestedFields.includes('id')) {
             requestedFields.push('id')
         }
@@ -196,6 +202,11 @@ export async function getAllUsers(options: GetAllUsersOptions = {}) {
     }
 }
 
+/**
+ * Retrieves a user by ID.
+ *
+ * Always excludes sensitive fields like password from the response.
+ */
 export async function getUserById(userId: string) {
     const user = await prisma.user.findUnique({
         where: { id: userId },

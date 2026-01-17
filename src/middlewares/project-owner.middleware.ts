@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/prisma';
 import { AuthRequest } from './auth.middleware';
 
+/**
+ * Middleware that enforces project ownership authorization.
+ * 
+ * Allows access if the user has the global 'owner' role or is the owner of the specific project.
+ * Used for operations that should be restricted to project owners (e.g., delete, update, add members).
+ */
 export async function requireProjectOwner(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
@@ -16,6 +22,7 @@ export async function requireProjectOwner(req: Request, res: Response, next: Nex
       });
     }
 
+    // Global 'owner' role bypasses project-specific ownership checks
     if (user.role === 'owner') {
       return next();
     }
