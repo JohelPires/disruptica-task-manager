@@ -25,7 +25,11 @@ export const getAll = async (
         const userRole = (req as any).user.role
 
         const includeParam = req.query.include as string | undefined
-        const includeOptions: { owner?: boolean; members?: boolean } = {}
+        const includeOptions: {
+            owner?: boolean
+            members?: boolean
+            tasks?: boolean
+        } = {}
 
         if (includeParam) {
             const includes = includeParam
@@ -37,18 +41,49 @@ export const getAll = async (
             if (includes.includes('members')) {
                 includeOptions.members = true
             }
+            if (includes.includes('tasks')) {
+                includeOptions.tasks = true
+            }
         }
 
         const page = parseInt(req.query.page as string) || 1
         const limit = parseInt(req.query.limit as string) || 10
 
-        const result = await projectService.getProjects(
-            userId,
-            userRole,
+        // Search parameter
+        const search = req.query.search as string | undefined
+
+        // Filter parameters
+        const name = req.query.name as string | undefined
+        const ownerId = req.query.ownerId as string | undefined
+        const createdAfter = req.query.createdAfter as string | undefined
+        const createdBefore = req.query.createdBefore as string | undefined
+        const updatedAfter = req.query.updatedAfter as string | undefined
+        const updatedBefore = req.query.updatedBefore as string | undefined
+        const myRole = req.query.myRole as 'owner' | 'member' | undefined
+
+        // Sort parameters
+        const sortBy = req.query.sortBy as string | undefined
+        const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined
+
+        const result = await projectService.getProjects(userId, userRole, {
             includeOptions,
             page,
-            limit
-        )
+            limit,
+            search,
+            filters: {
+                name,
+                ownerId,
+                createdAfter,
+                createdBefore,
+                updatedAfter,
+                updatedBefore,
+                myRole,
+            },
+            sort: {
+                sortBy,
+                sortOrder,
+            },
+        })
         res.json({
             projects: result.data,
             pagination: result.pagination,

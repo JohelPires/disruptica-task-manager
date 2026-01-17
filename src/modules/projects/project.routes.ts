@@ -58,8 +58,90 @@ router.post('/', apiRateLimiter, requireAuth, projectController.create);
  *         name: include
  *         schema:
  *           type: string
- *         description: Comma-separated list of relations to include (e.g., "owner,members")
- *         example: "owner,members"
+ *         description: Comma-separated list of relations to include (e.g., "owner,members,tasks")
+ *         example: "owner,members,tasks"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for case-insensitive partial match on project name and description
+ *         example: "my project"
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by exact project name
+ *         example: "My Project"
+ *       - in: query
+ *         name: ownerId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by owner ID
+ *       - in: query
+ *         name: createdAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter projects created after this ISO 8601 date
+ *         example: "2024-01-01T00:00:00Z"
+ *       - in: query
+ *         name: createdBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter projects created before this ISO 8601 date
+ *         example: "2024-12-31T23:59:59Z"
+ *       - in: query
+ *         name: updatedAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter projects updated after this ISO 8601 date
+ *         example: "2024-01-01T00:00:00Z"
+ *       - in: query
+ *         name: updatedBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter projects updated before this ISO 8601 date
+ *         example: "2024-12-31T23:59:59Z"
+ *       - in: query
+ *         name: myRole
+ *         schema:
+ *           type: string
+ *           enum: [owner, member]
+ *         description: Filter by authenticated user's role in project
+ *         example: "owner"
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, createdAt, updatedAt]
+ *           default: createdAt
+ *         description: Field to sort by
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Sort direction
  *     responses:
  *       200:
  *         description: Projects retrieved successfully
@@ -72,6 +154,17 @@ router.post('/', apiRateLimiter, requireAuth, projectController.create);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Project'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
  *       401:
  *         description: Authentication required
  *         content:
