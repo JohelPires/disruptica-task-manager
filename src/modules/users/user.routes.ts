@@ -29,6 +29,70 @@ const router = Router();
  *           maximum: 100
  *           default: 10
  *         description: Number of users per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search across user name and email (case-insensitive partial match)
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Filter by exact name match
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Filter by exact email match
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [owner, member]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: createdAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users created after this ISO 8601 date
+ *       - in: query
+ *         name: createdBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users created before this ISO 8601 date
+ *       - in: query
+ *         name: updatedAfter
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users updated after this ISO 8601 date
+ *       - in: query
+ *         name: updatedBefore
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users updated before this ISO 8601 date
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, email, createdAt, updatedAt]
+ *           default: createdAt
+ *         description: Field to sort by
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Sort direction
+ *       - in: query
+ *         name: fields
+ *         schema:
+ *           type: string
+ *         description: Comma-separated field names to include in response (id, name, email, role, createdAt, updatedAt). 'id' is always included.
  *     responses:
  *       200:
  *         description: Users retrieved successfully
@@ -49,6 +113,15 @@ const router = Router();
  *                         type: string
  *                       email:
  *                         type: string
+ *                       role:
+ *                         type: string
+ *                         enum: [owner, member]
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
  *                 pagination:
  *                   type: object
  *                   properties:
