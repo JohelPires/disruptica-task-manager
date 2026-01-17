@@ -57,7 +57,13 @@ export class ProjectService {
     return project;
   }
 
-  async getProjects(userId: string, userRole: string, includeOptions?: { owner?: boolean; members?: boolean }) {
+  async getProjects(
+    userId: string,
+    userRole: string,
+    includeOptions?: { owner?: boolean; members?: boolean },
+    page: number = 1,
+    limit: number = 10
+  ) {
     const includeOwner = includeOptions?.owner ?? false;
     const includeMembers = includeOptions?.members ?? false;
 
@@ -87,29 +93,44 @@ export class ProjectService {
       };
     }
 
-    if (userRole === 'owner') {
-      return prisma.project.findMany({
-        ...(Object.keys(include).length > 0 ? { include } : {}),
-        orderBy: { createdAt: 'desc' },
-      });
-    }
-
-    return prisma.project.findMany({
-      where: {
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: {
-                userId,
+    const skip = (page - 1) * limit;
+    const where = userRole === 'owner'
+      ? undefined
+      : {
+          OR: [
+            { ownerId: userId },
+            {
+              members: {
+                some: {
+                  userId,
+                },
               },
             },
-          },
-        ],
+          ],
+        };
+
+    const [projects, total] = await Promise.all([
+      prisma.project.findMany({
+        where,
+        ...(Object.keys(include).length > 0 ? { include } : {}),
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.project.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data: projects,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-      ...(Object.keys(include).length > 0 ? { include } : {}),
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   async getProjectById(projectId: string, userId: string, userRole: string) {

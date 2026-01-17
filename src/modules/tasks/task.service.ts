@@ -75,42 +75,65 @@ export class TaskService {
     return task;
   }
 
-  async getTasksByProject(projectId: string, userId: string, userRole: string) {
+  async getTasksByProject(
+    projectId: string,
+    userId: string,
+    userRole: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
     const isMember = await this.projectService.isProjectMember(projectId, userId, userRole);
     if (!isMember) {
       throw new Error('Access denied');
     }
 
-    const tasks = await prisma.task.findMany({
-      where: { projectId },
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const skip = (page - 1) * limit;
 
-    return tasks;
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where: { projectId },
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          assignedTo: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.task.count({
+        where: { projectId },
+      }),
+    ]);
+
+    return {
+      data: tasks,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getTaskById(taskId: string, userId: string, userRole: string) {

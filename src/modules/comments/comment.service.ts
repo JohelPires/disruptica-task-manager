@@ -59,7 +59,13 @@ export class CommentService {
     return comment;
   }
 
-  async getCommentsByTask(taskId: string, userId: string, userRole: string) {
+  async getCommentsByTask(
+    taskId: string,
+    userId: string,
+    userRole: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
     const task = await prisma.task.findUnique({
       where: { id: taskId },
     });
@@ -73,22 +79,39 @@ export class CommentService {
       throw new Error('Access denied');
     }
 
-    const comments = await prisma.comment.findMany({
-      where: { taskId },
-      include: {
-        author: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
+    const skip = (page - 1) * limit;
+
+    const [comments, total] = await Promise.all([
+      prisma.comment.findMany({
+        where: { taskId },
+        include: {
+          author: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: limit,
+      }),
+      prisma.comment.count({
+        where: { taskId },
+      }),
+    ]);
 
-    return comments;
+    return {
+      data: comments,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async deleteComment(commentId: string, userId: string, userRole: string) {

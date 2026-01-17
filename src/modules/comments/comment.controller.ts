@@ -33,12 +33,19 @@ export const getByTask = async (
         const { taskId } = req.params
         const userId = (req as any).user.userId
         const userRole = (req as any).user.role
-        const comments = await commentService.getCommentsByTask(
+        const page = parseInt(req.query.page as string) || 1
+        const limit = parseInt(req.query.limit as string) || 10
+        const result = await commentService.getCommentsByTask(
             taskId,
             userId,
-            userRole
+            userRole,
+            page,
+            limit
         )
-        res.json({ comments })
+        res.json({
+            comments: result.data,
+            pagination: result.pagination,
+        })
     } catch (error) {
         next(error)
     }
