@@ -15,7 +15,8 @@ const app = express()
 
 // Trust proxy - required when behind reverse proxy (nginx, load balancer, etc.)
 // This allows express-rate-limit to correctly identify client IPs from X-Forwarded-For header
-app.set('trust proxy', env.TRUST_PROXY !== 'false' ? 1 : false)
+// Set to a number (e.g., 1) to trust only the first proxy hop, preventing spoofing attacks
+app.set('trust proxy', env.TRUST_PROXY)
 
 // Request ID middleware must be first to ensure all logs have requestId
 app.use(requestIdMiddleware)

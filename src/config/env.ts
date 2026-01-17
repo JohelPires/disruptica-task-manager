@@ -16,7 +16,13 @@ export const env = {
   // Logging configuration
   LOG_LEVEL: process.env.LOG_LEVEL,
   // Proxy configuration
-  TRUST_PROXY: process.env.TRUST_PROXY,
+  // Parse TRUST_PROXY as number (e.g., '1' for one proxy) or false if disabled
+  // This prevents express-rate-limit from throwing ERR_ERL_PERMISSIVE_TRUST_PROXY
+  TRUST_PROXY: process.env.TRUST_PROXY === 'false' 
+    ? false 
+    : process.env.TRUST_PROXY 
+      ? parseInt(process.env.TRUST_PROXY, 10) || 1 
+      : 1,
   // Rate limiting configuration
   // Enabled by default unless explicitly set to 'false' (allows opt-out for testing)
   RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED !== 'false',
