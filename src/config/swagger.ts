@@ -457,7 +457,7 @@ const options: swaggerJsdoc.Options = {
         ],
     },
     apis:
-        env.NODE_ENV === 'production'
+        process.env.NODE_ENV === 'production'
             ? [
                   path.join(process.cwd(), 'dist/modules/**/*.routes.js'),
                   path.join(process.cwd(), 'dist/modules/**/*.controller.js'),
