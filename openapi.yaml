@@ -11,6 +11,8 @@ servers:
     description: Development server
 
 tags:
+  - name: Health
+    description: Health check endpoints
   - name: Authentication
     description: User authentication and registration endpoints
   - name: Users
@@ -354,6 +356,31 @@ components:
           type: integer
 
 paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the API server
+      tags: [Health]
+      responses:
+        '200':
+          description: API is healthy and running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                    description: Health status
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Current server timestamp in ISO 8601 format
+              example:
+                status: ok
+                timestamp: '2024-01-01T00:00:00.000Z'
+
   /auth/register:
     post:
       summary: Register a new user

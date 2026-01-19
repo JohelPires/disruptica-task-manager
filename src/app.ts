@@ -10,9 +10,11 @@ import { globalRateLimiter } from './middlewares/rateLimiter.middleware'
 import { requestIdMiddleware } from './middlewares/requestId.middleware'
 import { swaggerSpec } from './config/swagger'
 import { env } from './config/env'
+import cors from 'cors';
 
 const app = express()
 
+app.use(cors({ origin: env.CORS_ORIGIN || '*' }));
 // Trust proxy - required when behind reverse proxy (nginx, load balancer, etc.)
 // This allows express-rate-limit to correctly identify client IPs from X-Forwarded-For header
 // Set to a number (e.g., 1) to trust only the first proxy hop, preventing spoofing attacks
@@ -35,6 +37,10 @@ app.use(
         customSiteTitle: 'Task Management API Documentation',
     })
 )
+
+app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
 
 // Serve raw OpenAPI JSON spec
 app.get('/api-docs.json', (_req, res) => {
