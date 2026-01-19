@@ -320,7 +320,7 @@ The Swagger UI provides:
 1. **Register a new user**:
 
 ```bash
-curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/auth/register \
+curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -332,7 +332,7 @@ curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/auth/regist
 2. **Login**:
 
 ```bash
-curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/auth/login \
+curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -357,30 +357,88 @@ Response:
 3. **Use the JWT token** for authenticated requests:
 
 ```bash
-curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
+curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/projects \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 **Note**: Replace `https://canario-disruptica-tm-api.qmono1.easypanel.host` with `http://localhost:3000` for local development.
 
+## 🔄 API Versioning
+
+The API uses URI-based versioning with support for version negotiation via HTTP headers.
+
+### Base Path
+
+All public API endpoints are available under the `/api/v1` prefix:
+
+- **Base URL**: `/api/v1`
+- **Supported Versions**: `v1`
+
+### Version Negotiation
+
+The API supports optional version negotiation via the `Accept-Version` HTTP header:
+
+- **Header**: `Accept-Version: v1`
+- **Default**: If no header is provided, the API defaults to `v1`
+- **Invalid Version**: If an unsupported version is requested, the API returns `400 Bad Request` with details
+
+### Example Requests
+
+**Without Accept-Version header** (defaults to v1):
+```bash
+curl -X GET http://localhost:3000/api/v1/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**With Accept-Version header**:
+```bash
+curl -X GET http://localhost:3000/api/v1/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Accept-Version: v1"
+```
+
+**Unsupported version** (returns 400):
+```bash
+curl -X GET http://localhost:3000/api/v1/projects \
+  -H "Accept-Version: v2"
+```
+
+Response:
+```json
+{
+  "error": "Unsupported API version",
+  "supportedVersions": ["v1"],
+  "requestedVersion": "v2"
+}
+```
+
+### Unversioned Endpoints
+
+The following endpoints remain unversioned (internal/utility routes):
+
+- `GET /` - API information
+- `GET /health` - Health check
+- `GET /api-docs` - Swagger UI documentation
+- `GET /api-docs.json` - OpenAPI JSON spec
+
 ## 📡 API Endpoints
 
 ### Authentication
 
-| Method | Endpoint         | Description             | Auth Required |
-| ------ | ---------------- | ----------------------- | ------------- |
-| POST   | `/auth/register` | Register a new user     | No            |
-| POST   | `/auth/login`    | Login and get JWT token | No            |
-| GET    | `/auth/me`       | Get current user info   | Yes           |
+| Method | Endpoint                    | Description             | Auth Required |
+| ------ | --------------------------- | ----------------------- | ------------- |
+| POST   | `/api/v1/auth/register`     | Register a new user     | No            |
+| POST   | `/api/v1/auth/login`        | Login and get JWT token | No            |
+| GET    | `/api/v1/auth/me`           | Get current user info   | Yes           |
 
 **Rate Limit**: Auth endpoints have stricter rate limiting (5 requests per 15 minutes by default)
 
 ### Users
 
-| Method | Endpoint     | Description                                        | Auth Required |
-| ------ | ------------ | -------------------------------------------------- | ------------- |
-| GET    | `/users`     | Get all users (with pagination, filtering, search) | Yes           |
-| GET    | `/users/:id` | Get user by ID                                     | Yes           |
+| Method | Endpoint            | Description                                        | Auth Required |
+| ------ | ------------------- | -------------------------------------------------- | ------------- |
+| GET    | `/api/v1/users`     | Get all users (with pagination, filtering, search) | Yes           |
+| GET    | `/api/v1/users/:id` | Get user by ID                                     | Yes           |
 
 **Query Parameters** (for GET `/users`):
 
@@ -393,15 +451,15 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
 
 ### Projects
 
-| Method | Endpoint                        | Description                                          | Auth Required    |
-| ------ | ------------------------------- | ---------------------------------------------------- | ---------------- |
-| POST   | `/projects`                     | Create a new project                                 | Yes              |
-| GET    | `/projects`                     | Get all user's projects (with filtering, pagination) | Yes              |
-| GET    | `/projects/:id`                 | Get project by ID                                    | Yes              |
-| PUT    | `/projects/:id`                 | Update project                                       | Yes (Owner only) |
-| DELETE | `/projects/:id`                 | Delete project                                       | Yes (Owner only) |
-| POST   | `/projects/:id/members`         | Add member to project                                | Yes (Owner only) |
-| DELETE | `/projects/:id/members/:userId` | Remove member from project                           | Yes (Owner only) |
+| Method | Endpoint                                  | Description                                          | Auth Required    |
+| ------ | ----------------------------------------- | ---------------------------------------------------- | ---------------- |
+| POST   | `/api/v1/projects`                       | Create a new project                                 | Yes              |
+| GET    | `/api/v1/projects`                       | Get all user's projects (with filtering, pagination) | Yes              |
+| GET    | `/api/v1/projects/:id`                   | Get project by ID                                    | Yes              |
+| PUT    | `/api/v1/projects/:id`                   | Update project                                       | Yes (Owner only) |
+| DELETE | `/api/v1/projects/:id`                   | Delete project                                       | Yes (Owner only) |
+| POST   | `/api/v1/projects/:id/members`           | Add member to project                                | Yes (Owner only) |
+| DELETE | `/api/v1/projects/:id/members/:userId`   | Remove member from project                           | Yes (Owner only) |
 
 **Query Parameters** (for GET `/projects`):
 
@@ -414,13 +472,13 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
 
 ### Tasks
 
-| Method | Endpoint                     | Description                | Auth Required |
-| ------ | ---------------------------- | -------------------------- | ------------- |
-| POST   | `/projects/:projectId/tasks` | Create a task in a project | Yes           |
-| GET    | `/projects/:projectId/tasks` | Get all tasks in project   | Yes           |
-| GET    | `/tasks/:id`                 | Get task by ID             | Yes           |
-| PUT    | `/tasks/:id`                 | Update task                | Yes           |
-| DELETE | `/tasks/:id`                 | Delete task                | Yes           |
+| Method | Endpoint                                 | Description                | Auth Required |
+| ------ | ---------------------------------------- | -------------------------- | ------------- |
+| POST   | `/api/v1/projects/:projectId/tasks`      | Create a task in a project | Yes           |
+| GET    | `/api/v1/projects/:projectId/tasks`      | Get all tasks in project   | Yes           |
+| GET    | `/api/v1/tasks/:id`                      | Get task by ID             | Yes           |
+| PUT    | `/api/v1/tasks/:id`                      | Update task                | Yes           |
+| DELETE | `/api/v1/tasks/:id`                      | Delete task                | Yes           |
 
 **Query Parameters** (for GET `/projects/:projectId/tasks`):
 
@@ -439,12 +497,12 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/projects \
 
 ### Comments
 
-| Method | Endpoint                  | Description                 | Auth Required     |
-| ------ | ------------------------- | --------------------------- | ----------------- |
-| POST   | `/tasks/:taskId/comments` | Create a comment on a task  | Yes               |
-| GET    | `/tasks/:taskId/comments` | Get all comments for a task | Yes               |
-| GET    | `/comments/:id`           | Get comment by ID           | Yes               |
-| DELETE | `/comments/:id`           | Delete comment              | Yes (Author only) |
+| Method | Endpoint                              | Description                 | Auth Required     |
+| ------ | ------------------------------------- | --------------------------- | ----------------- |
+| POST   | `/api/v1/tasks/:taskId/comments`      | Create a comment on a task  | Yes               |
+| GET    | `/api/v1/tasks/:taskId/comments`      | Get all comments for a task | Yes               |
+| GET    | `/api/v1/comments/:id`                | Get comment by ID           | Yes               |
+| DELETE | `/api/v1/comments/:id`                | Delete comment              | Yes (Author only) |
 
 **Query Parameters** (for GET `/tasks/:taskId/comments`):
 

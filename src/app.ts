@@ -1,13 +1,10 @@
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
-import authRoutes from './modules/auth/auth.routes'
-import userRoutes from './modules/users/user.routes'
-import projectRoutes from './modules/projects/project.routes'
-import taskRoutes from './modules/tasks/task.routes'
-import commentRoutes from './modules/comments/comment.routes'
+import v1Routes from './routes/v1'
 import { errorMiddleware } from './middlewares/error.middleware'
 import { globalRateLimiter } from './middlewares/rateLimiter.middleware'
 import { requestIdMiddleware } from './middlewares/requestId.middleware'
+import { apiVersionMiddleware } from './middlewares/apiVersion.middleware'
 import { swaggerSpec } from './config/swagger'
 import { env } from './config/env'
 import cors from 'cors';
@@ -15,6 +12,7 @@ import cors from 'cors';
 const app = express()
 
 app.use(cors({ origin: env.CORS_ORIGIN || '*' }));
+
 // Trust proxy - required when behind reverse proxy (nginx, load balancer, etc.)
 // This allows express-rate-limit to correctly identify client IPs from X-Forwarded-For header
 // Set to a number (e.g., 1) to trust only the first proxy hop, preventing spoofing attacks
@@ -60,13 +58,8 @@ app.get('/', (_req, res) => {
     })
 })
 
-// API routes - ordered by specificity (more specific routes first)
-app.use('/auth', authRoutes)
-app.use('/users', userRoutes)
-app.use('/projects', projectRoutes)
-// Task and comment routes use root path due to nested routing structure
-app.use('/', taskRoutes)
-app.use('/', commentRoutes)
+// Versioned API routes - all public API endpoints under /api/v1
+app.use('/api/v1', apiVersionMiddleware, v1Routes)
 
 // Error handling middleware must be last to catch errors from all routes
 app.use(errorMiddleware)

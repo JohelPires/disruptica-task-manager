@@ -2,7 +2,11 @@ openapi: 3.0.0
 info:
   title: Task Management System API
   version: 1.0.0
-  description: A comprehensive REST API for managing tasks, projects, users, and comments
+  description: |
+    A comprehensive REST API for managing tasks, projects, users, and comments.
+    
+    ## API Versioning
+    All public API endpoints are versioned and available under `/api/v1`. The API supports optional version negotiation via the `Accept-Version` header. If no header is provided, the API defaults to version `v1`.
   contact:
     name: API Support
 
@@ -30,7 +34,21 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Enter JWT token obtained from /auth/login or /auth/register
+      description: Enter JWT token obtained from /api/v1/auth/login or /api/v1/auth/register
+
+  parameters:
+    AcceptVersion:
+      name: Accept-Version
+      in: header
+      description: |
+        Optional API version negotiation header. Supported values: `v1`. 
+        If omitted, the API defaults to version `v1`. 
+        If an unsupported version is requested, the API returns `400 Bad Request`.
+      schema:
+        type: string
+        enum: [v1]
+        default: v1
+      required: false
 
   schemas:
     User:
@@ -381,10 +399,12 @@ paths:
                 status: ok
                 timestamp: '2024-01-01T00:00:00.000Z'
 
-  /auth/register:
+  /api/v1/auth/register:
     post:
       summary: Register a new user
       tags: [Authentication]
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
       requestBody:
         required: true
         content:
@@ -405,10 +425,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /auth/login:
+  /api/v1/auth/login:
     post:
       summary: Login with email and password
       tags: [Authentication]
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
       requestBody:
         required: true
         content:
@@ -429,10 +451,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /auth/me:
+  /api/v1/auth/me:
     get:
       summary: Get current authenticated user information
       tags: [Authentication]
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
       security:
         - bearerAuth: []
       responses:
@@ -452,13 +476,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /users:
+  /api/v1/users:
     get:
       summary: Get all users
       tags: [Users]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: query
           name: page
           schema:
@@ -576,13 +599,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /users/{id}:
+  /api/v1/users/{id}:
     get:
       summary: Get user by ID
       tags: [Users]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -590,6 +612,8 @@ paths:
             type: string
             format: uuid
           description: User ID
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: User retrieved successfully
@@ -613,10 +637,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /projects:
+  /api/v1/projects:
     post:
       summary: Create a new project
       tags: [Projects]
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
       security:
         - bearerAuth: []
       requestBody:
@@ -651,9 +677,8 @@ paths:
     get:
       summary: Get all projects for the authenticated user
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: query
           name: include
           schema:
@@ -763,13 +788,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /projects/{id}:
+  /api/v1/projects/{id}:
     get:
       summary: Get project by ID
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -777,6 +801,8 @@ paths:
             type: string
             format: uuid
           description: Project ID
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Project retrieved successfully
@@ -809,9 +835,8 @@ paths:
     put:
       summary: Update a project
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -857,9 +882,8 @@ paths:
     delete:
       summary: Delete a project
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -889,13 +913,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /projects/{id}/members:
+  /api/v1/projects/{id}/members:
     post:
       summary: Add a member to a project
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -903,6 +926,8 @@ paths:
             type: string
             format: uuid
           description: Project ID
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -938,13 +963,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /projects/{id}/members/{userId}:
+  /api/v1/projects/{id}/members/{userId}:
     delete:
       summary: Remove a member from a project
       tags: [Projects]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -959,6 +983,8 @@ paths:
             type: string
             format: uuid
           description: User ID to remove
+      security:
+        - bearerAuth: []
       responses:
         '204':
           description: Member removed successfully
@@ -981,13 +1007,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /projects/{projectId}/tasks:
+  /api/v1/projects/{projectId}/tasks:
     post:
       summary: Create a new task in a project
       tags: [Tasks]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: projectId
           required: true
@@ -1039,9 +1064,8 @@ paths:
     get:
       summary: Get all tasks for a project
       tags: [Tasks]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: projectId
           required: true
@@ -1188,13 +1212,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /tasks/{id}:
+  /api/v1/tasks/{id}:
     get:
       summary: Get task by ID
       tags: [Tasks]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -1202,6 +1225,8 @@ paths:
             type: string
             format: uuid
           description: Task ID
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Task retrieved successfully
@@ -1234,9 +1259,8 @@ paths:
     put:
       summary: Update a task
       tags: [Tasks]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -1282,9 +1306,8 @@ paths:
     delete:
       summary: Delete a task
       tags: [Tasks]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -1292,6 +1315,8 @@ paths:
             type: string
             format: uuid
           description: Task ID
+      security:
+        - bearerAuth: []
       responses:
         '204':
           description: Task deleted successfully
@@ -1314,13 +1339,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /tasks/{taskId}/comments:
+  /api/v1/tasks/{taskId}/comments:
     post:
       summary: Create a new comment on a task
       tags: [Comments]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: taskId
           required: true
@@ -1328,6 +1352,8 @@ paths:
             type: string
             format: uuid
           description: Task ID
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -1372,9 +1398,8 @@ paths:
     get:
       summary: Get all comments for a task
       tags: [Comments]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: taskId
           required: true
@@ -1490,13 +1515,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /comments/{id}:
+  /api/v1/comments/{id}:
     delete:
       summary: Delete a comment
       tags: [Comments]
-      security:
-        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/AcceptVersion'
         - in: path
           name: id
           required: true
@@ -1504,6 +1528,8 @@ paths:
             type: string
             format: uuid
           description: Comment ID
+      security:
+        - bearerAuth: []
       responses:
         '204':
           description: Comment deleted successfully

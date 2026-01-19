@@ -11,7 +11,7 @@
 [ ] testing
 [ ] fix failing tests
 [ ] verify database performance issues (n+1, etc)
-[ ] add health checkpoint
+[x] add health checkpoint
 [ ] add versioning route
-[ ] CORS
+[x] CORS
 [ ] email notification?
