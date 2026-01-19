@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../../src/app';
 import { prisma } from '../../src/config/prisma';
-import { hashPassword } from '../../src/utils/password';
+// import { hashPassword } from '../../src/utils/password';
 
 describe('Integration Tests - Core Workflows', () => {
   beforeEach(async () => {

@@ -8,7 +8,7 @@ describe('Comments API', () => {
   let ownerToken: string;
   let memberToken: string;
   let member2Token: string;
-  let ownerId: string;
+  // let ownerId: string;
   let memberId: string;
   let member2Id: string;
   let projectId: string;
@@ -48,7 +48,7 @@ describe('Comments API', () => {
       },
     });
 
-    ownerId = owner.id;
+    // ownerId = owner.id;
     memberId = member.id;
     member2Id = member2.id;
 

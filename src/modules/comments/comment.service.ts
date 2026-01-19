@@ -289,6 +289,16 @@ export async function deleteComment(
         throw new Error('Comment not found')
     }
 
+    // First verify user has access to the project containing this comment
+    const isMember = await isProjectMember(
+        comment.task.projectId,
+        userId,
+        userRole
+    )
+    if (!isMember) {
+        throw new Error('Access denied')
+    }
+
     const isProjectOwnerCheck = await isProjectOwner(
         comment.task.projectId,
         userId,

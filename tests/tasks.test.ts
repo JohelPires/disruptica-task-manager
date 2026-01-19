@@ -8,11 +8,11 @@ describe('Tasks API', () => {
   let ownerToken: string;
   let memberToken: string;
   let member2Token: string;
-  let ownerId: string;
+  // let ownerId: string;
   let memberId: string;
   let member2Id: string;
   let projectId: string;
-  let project2Id: string;
+  // let project2Id: string;
 
   beforeEach(async () => {
     await prisma.comment.deleteMany();
@@ -48,7 +48,7 @@ describe('Tasks API', () => {
       },
     });
 
-    ownerId = owner.id;
+    // ownerId = owner.id;
     memberId = member.id;
     member2Id = member2.id;
 
@@ -84,7 +84,7 @@ describe('Tasks API', () => {
         ownerId: member2Id,
       },
     });
-    project2Id = project2.id;
+    // project2Id = project2.id;
   });
 
   describe('POST /projects/:projectId/tasks', () => {
