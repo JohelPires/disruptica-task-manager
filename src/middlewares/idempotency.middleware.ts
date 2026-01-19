@@ -113,7 +113,8 @@ export function idempotencyMiddleware(
                     res.send = originalSend
 
                     // Return cached response
-                    return res.status(200).json(existingKey.response as any)
+                    res.status(200).json(existingKey.response as any)
+                    return
                 } else {
                     // Key expired, delete it and proceed
                     await prisma.idempotencyKey.delete({
