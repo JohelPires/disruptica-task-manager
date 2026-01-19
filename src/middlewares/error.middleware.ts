@@ -2,12 +2,56 @@ import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { Prisma } from '@prisma/client'
 import { createChildLogger } from '../utils/logger'
+import { AppError } from '../errors/AppError'
+
+/**
+ * Map of error messages to error codes and HTTP status codes.
+ * Used as fallback when errors don't have explicit codes.
+ */
+const ERROR_MESSAGE_MAP: Record<
+    string,
+    { code: string; statusCode: number }
+> = {
+    'User with this email already exists': {
+        code: 'DUPLICATE_EMAIL',
+        statusCode: 409,
+    },
+    'Invalid email or password': {
+        code: 'INVALID_CREDENTIALS',
+        statusCode: 401,
+    },
+    'User not found': {
+        code: 'USER_NOT_FOUND',
+        statusCode: 404,
+    },
+    'Project not found': {
+        code: 'PROJECT_NOT_FOUND',
+        statusCode: 404,
+    },
+    'Task not found': {
+        code: 'TASK_NOT_FOUND',
+        statusCode: 404,
+    },
+    'Comment not found': {
+        code: 'COMMENT_NOT_FOUND',
+        statusCode: 404,
+    },
+    'Access denied': {
+        code: 'ACCESS_DENIED',
+        statusCode: 403,
+    },
+    'Invalid or expired token': {
+        code: 'INVALID_TOKEN',
+        statusCode: 401,
+    },
+}
 
 /**
  * Global error handling middleware.
  *
  * Maps application errors to appropriate HTTP status codes and standardized error responses.
  * Handles validation errors, database errors, and business logic errors consistently.
+ * Uses explicit error codes when available (AppError), falls back to message matching for backward compatibility.
  */
 export function errorMiddleware(
     error: Error,
@@ -22,6 +66,7 @@ export function errorMiddleware(
         endpoint: req.path,
         method: req.method,
     })
+
     // Zod validation errors - transform into user-friendly messages
     if (error instanceof ZodError) {
         const errorMessages = error.errors.map((e) => {
@@ -74,76 +119,35 @@ export function errorMiddleware(
         })
     }
 
-    // Business logic errors - map common error messages to HTTP status codes
-    // This approach allows services to throw simple errors that get automatically mapped
-    if (error.message === 'User with this email already exists') {
-        return res.status(409).json({
+    // AppError with explicit error code - preferred approach
+    if (error instanceof AppError) {
+        return res.status(error.statusCode).json({
             error: {
                 message: error.message,
-                code: 'DUPLICATE_EMAIL',
+                code: error.code,
             },
         })
     }
 
-    if (error.message === 'Invalid email or password') {
-        return res.status(401).json({
+    // Business logic errors - map error messages to HTTP status codes
+    // Fallback for backward compatibility with plain Error instances
+    const errorMapping = ERROR_MESSAGE_MAP[error.message]
+    if (errorMapping) {
+        return res.status(errorMapping.statusCode).json({
             error: {
                 message: error.message,
-                code: 'INVALID_CREDENTIALS',
+                code: errorMapping.code,
             },
         })
     }
 
-    if (error.message === 'User not found') {
-        return res.status(404).json({
+    // Check for explicit error code on Error instance (for manually added codes)
+    const errorWithCode = error as Error & { code?: string; statusCode?: number }
+    if (errorWithCode.code && errorWithCode.statusCode) {
+        return res.status(errorWithCode.statusCode).json({
             error: {
                 message: error.message,
-                code: 'USER_NOT_FOUND',
-            },
-        })
-    }
-
-    if (error.message === 'Project not found') {
-        return res.status(404).json({
-            error: {
-                message: error.message,
-                code: 'PROJECT_NOT_FOUND',
-            },
-        })
-    }
-
-    if (error.message === 'Task not found') {
-        return res.status(404).json({
-            error: {
-                message: error.message,
-                code: 'TASK_NOT_FOUND',
-            },
-        })
-    }
-
-    if (error.message === 'Comment not found') {
-        return res.status(404).json({
-            error: {
-                message: error.message,
-                code: 'COMMENT_NOT_FOUND',
-            },
-        })
-    }
-
-    if (error.message === 'Access denied') {
-        return res.status(403).json({
-            error: {
-                message: error.message,
-                code: 'ACCESS_DENIED',
-            },
-        })
-    }
-
-    if (error.message === 'Invalid or expired token') {
-        return res.status(401).json({
-            error: {
-                message: error.message,
-                code: 'INVALID_TOKEN',
+                code: errorWithCode.code,
             },
         })
     }
@@ -156,7 +160,7 @@ export function errorMiddleware(
             err: error,
             errorName: error.name,
             errorMessage: error.message,
-            errorCode: (error as any).code,
+            errorCode: (error as Error & { code?: string }).code,
         },
         'Unhandled error'
     )
