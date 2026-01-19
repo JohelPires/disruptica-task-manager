@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { Request } from 'express';
 import { env } from '../config/env';
 
@@ -44,9 +44,9 @@ export const apiRateLimiter = rateLimit({
     if (userId) {
       return `user:${userId}`;
     }
-    // Extract IP address with proper IPv6 handling
-    // req.ip is provided by express and handles proxy headers correctly when trust proxy is configured
-    return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+    // Use ipKeyGenerator helper for proper IPv6 address handling
+    // This prevents IPv6 users from bypassing rate limits
+    return `ip:${ipKeyGenerator(req)}`;
   },
 });
 
