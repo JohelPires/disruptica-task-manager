@@ -91,7 +91,7 @@ describe('Comments API', () => {
   describe('POST /tasks/:taskId/comments', () => {
     it('should create comment by project owner', async () => {
       const response = await request(app)
-        .post(`/tasks/${taskId}/comments`)
+        .post(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           content: 'Test Comment',
@@ -112,7 +112,7 @@ describe('Comments API', () => {
       });
 
       const response = await request(app)
-        .post(`/tasks/${taskId}/comments`)
+        .post(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           content: 'Member Comment',
@@ -123,7 +123,7 @@ describe('Comments API', () => {
 
     it('should create comment by global owner', async () => {
       const response = await request(app)
-        .post(`/tasks/${taskId}/comments`)
+        .post(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({
           content: 'Owner Comment',
@@ -134,7 +134,7 @@ describe('Comments API', () => {
 
     it('should not create comment by non-member', async () => {
       const response = await request(app)
-        .post(`/tasks/${taskId}/comments`)
+        .post(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           content: 'Unauthorized Comment',
@@ -165,7 +165,7 @@ describe('Comments API', () => {
 
     it('should get comments by project owner', async () => {
       const response = await request(app)
-        .get(`/tasks/${taskId}/comments`)
+        .get(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -182,7 +182,7 @@ describe('Comments API', () => {
       });
 
       const response = await request(app)
-        .get(`/tasks/${taskId}/comments`)
+        .get(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(200);
@@ -191,7 +191,7 @@ describe('Comments API', () => {
 
     it('should not get comments by non-member', async () => {
       const response = await request(app)
-        .get(`/tasks/${taskId}/comments`)
+        .get(`/api/v1/tasks/${taskId}/comments`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
@@ -232,7 +232,7 @@ describe('Comments API', () => {
 
     it('should delete own comment', async () => {
       const response = await request(app)
-        .delete(`/comments/${commentId}`)
+        .delete(`/api/v1/comments/${commentId}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(204);
@@ -245,7 +245,7 @@ describe('Comments API', () => {
 
     it('should delete comment by project owner', async () => {
       const response = await request(app)
-        .delete(`/comments/${comment2Id}`)
+        .delete(`/api/v1/comments/${comment2Id}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(204);
@@ -253,7 +253,7 @@ describe('Comments API', () => {
 
     it('should delete comment by global owner', async () => {
       const response = await request(app)
-        .delete(`/comments/${commentId}`)
+        .delete(`/api/v1/comments/${commentId}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(204);
@@ -261,7 +261,7 @@ describe('Comments API', () => {
 
     it('should not delete comment by other member', async () => {
       const response = await request(app)
-        .delete(`/comments/${commentId}`)
+        .delete(`/api/v1/comments/${commentId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);

@@ -72,7 +72,7 @@ describe('Projects API', () => {
   describe('POST /projects', () => {
     it('should create a project', async () => {
       const response = await request(app)
-        .post('/projects')
+        .post('/api/v1/projects')
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           name: 'Test Project',
@@ -85,7 +85,7 @@ describe('Projects API', () => {
     });
 
     it('should require authentication', async () => {
-      const response = await request(app).post('/projects').send({
+      const response = await request(app).post('/api/v1/projects').send({
         name: 'Test Project',
       });
 
@@ -112,7 +112,7 @@ describe('Projects API', () => {
 
     it('should return all projects for global owner', async () => {
       const response = await request(app)
-        .get('/projects')
+        .get('/api/v1/projects')
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(200);
@@ -121,7 +121,7 @@ describe('Projects API', () => {
 
     it('should return only accessible projects for member', async () => {
       const response = await request(app)
-        .get('/projects')
+        .get('/api/v1/projects')
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -146,7 +146,7 @@ describe('Projects API', () => {
       });
 
       const response = await request(app)
-        .get('/projects')
+        .get('/api/v1/projects')
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -169,7 +169,7 @@ describe('Projects API', () => {
 
     it('should get project by id for owner', async () => {
       const response = await request(app)
-        .get(`/projects/${projectId}`)
+        .get(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -178,7 +178,7 @@ describe('Projects API', () => {
 
     it('should get project by id for global owner', async () => {
       const response = await request(app)
-        .get(`/projects/${projectId}`)
+        .get(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(200);
@@ -194,7 +194,7 @@ describe('Projects API', () => {
       });
 
       const response = await request(app)
-        .get(`/projects/${projectId}`)
+        .get(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(200);
@@ -202,7 +202,7 @@ describe('Projects API', () => {
 
     it('should not get project for non-member', async () => {
       const response = await request(app)
-        .get(`/projects/${projectId}`)
+        .get(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
@@ -224,7 +224,7 @@ describe('Projects API', () => {
 
     it('should update project by owner', async () => {
       const response = await request(app)
-        .put(`/projects/${projectId}`)
+        .put(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           name: 'Updated Project',
@@ -236,7 +236,7 @@ describe('Projects API', () => {
 
     it('should update project by global owner', async () => {
       const response = await request(app)
-        .put(`/projects/${projectId}`)
+        .put(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({
           name: 'Updated by Owner',
@@ -255,7 +255,7 @@ describe('Projects API', () => {
       });
 
       const response = await request(app)
-        .put(`/projects/${projectId}`)
+        .put(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           name: 'Unauthorized Update',
@@ -280,7 +280,7 @@ describe('Projects API', () => {
 
     it('should delete project by owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}`)
+        .delete(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(204);
@@ -293,7 +293,7 @@ describe('Projects API', () => {
 
     it('should delete project by global owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}`)
+        .delete(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(204);
@@ -301,7 +301,7 @@ describe('Projects API', () => {
 
     it('should not delete project by non-owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}`)
+        .delete(`/api/v1/projects/${projectId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
@@ -323,7 +323,7 @@ describe('Projects API', () => {
 
     it('should add member by project owner', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/members`)
+        .post(`/api/v1/projects/${projectId}/members`)
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           userId: member2Id,
@@ -336,7 +336,7 @@ describe('Projects API', () => {
 
     it('should add member by global owner', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/members`)
+        .post(`/api/v1/projects/${projectId}/members`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({
           userId: member2Id,
@@ -348,7 +348,7 @@ describe('Projects API', () => {
 
     it('should not add member by non-owner', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/members`)
+        .post(`/api/v1/projects/${projectId}/members`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           userId: ownerId,
@@ -382,7 +382,7 @@ describe('Projects API', () => {
 
     it('should remove member by project owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}/members/${member2Id}`)
+        .delete(`/api/v1/projects/${projectId}/members/${member2Id}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(204);
@@ -401,7 +401,7 @@ describe('Projects API', () => {
 
     it('should remove member by global owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}/members/${member2Id}`)
+        .delete(`/api/v1/projects/${projectId}/members/${member2Id}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(204);
@@ -409,7 +409,7 @@ describe('Projects API', () => {
 
     it('should not remove member by non-owner', async () => {
       const response = await request(app)
-        .delete(`/projects/${projectId}/members/${member2Id}`)
+        .delete(`/api/v1/projects/${projectId}/members/${member2Id}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);

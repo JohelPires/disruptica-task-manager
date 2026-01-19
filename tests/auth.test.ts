@@ -5,6 +5,9 @@ import { hashPassword } from '../src/utils/password';
 
 describe('Auth API', () => {
   beforeEach(async () => {
+    // Disable rate limiting for auth tests
+    process.env.RATE_LIMIT_ENABLED = 'false';
+    
     await prisma.comment.deleteMany();
     await prisma.task.deleteMany();
     await prisma.projectMember.deleteMany();
@@ -15,7 +18,7 @@ describe('Auth API', () => {
   describe('POST /auth/register', () => {
     it('should register a new user', async () => {
       const response = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -31,7 +34,7 @@ describe('Auth API', () => {
 
     it('should ignore role field and always create user as member', async () => {
       const response = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'owner@example.com',
           password: 'password123',
@@ -53,7 +56,7 @@ describe('Auth API', () => {
       });
 
       const response = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -65,7 +68,7 @@ describe('Auth API', () => {
 
     it('should validate email format', async () => {
       const response = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'invalid-email',
           password: 'password123',
@@ -77,7 +80,7 @@ describe('Auth API', () => {
 
     it('should validate password length', async () => {
       const response = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'test@example.com',
           password: '123',
@@ -101,7 +104,7 @@ describe('Auth API', () => {
 
     it('should login with valid credentials', async () => {
       const response = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -114,7 +117,7 @@ describe('Auth API', () => {
 
     it('should not login with invalid email', async () => {
       const response = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'wrong@example.com',
           password: 'password123',
@@ -125,7 +128,7 @@ describe('Auth API', () => {
 
     it('should not login with invalid password', async () => {
       const response = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'wrongpassword',
@@ -148,7 +151,7 @@ describe('Auth API', () => {
       });
 
       const loginResponse = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -159,7 +162,7 @@ describe('Auth API', () => {
 
     it('should get current user with valid token', async () => {
       const response = await request(app)
-        .get('/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -167,14 +170,14 @@ describe('Auth API', () => {
     });
 
     it('should not get current user without token', async () => {
-      const response = await request(app).get('/auth/me');
+      const response = await request(app).get('/api/v1/auth/me');
 
       expect(response.status).toBe(401);
     });
 
     it('should not get current user with invalid token', async () => {
       const response = await request(app)
-        .get('/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', 'Bearer invalid-token');
 
       expect(response.status).toBe(401);

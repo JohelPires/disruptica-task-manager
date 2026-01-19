@@ -17,8 +17,14 @@ describe('Rate Limiter Middleware', () => {
   });
 
   afterAll(() => {
-    // Restore original environment
-    process.env = originalEnv;
+    // Restore original environment - disable rate limiting for other tests
+    process.env.RATE_LIMIT_ENABLED = 'false';
+    // Restore other original values
+    Object.keys(originalEnv).forEach(key => {
+      if (key.startsWith('RATE_LIMIT_') && key !== 'RATE_LIMIT_ENABLED') {
+        process.env[key] = originalEnv[key];
+      }
+    });
   });
 
   beforeEach(async () => {
@@ -41,7 +47,7 @@ describe('Rate Limiter Middleware', () => {
         // Make 3 requests (at the limit)
         for (let i = 1; i <= 3; i++) {
           const response = await request(app)
-            .post('/auth/register')
+            .post('/api/v1/auth/register')
             .send({
               email: `test${i}@example.com`,
               password: 'password123',
@@ -57,7 +63,7 @@ describe('Rate Limiter Middleware', () => {
         // Make 3 successful requests
         for (let i = 1; i <= 3; i++) {
           const response = await request(app)
-            .post('/auth/register')
+            .post('/api/v1/auth/register')
             .send({
               email: `test${i}@example.com`,
               password: 'password123',
@@ -69,7 +75,7 @@ describe('Rate Limiter Middleware', () => {
 
         // 4th request should be blocked
         const blockedResponse = await request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: 'test4@example.com',
             password: 'password123',
@@ -87,7 +93,7 @@ describe('Rate Limiter Middleware', () => {
         await new Promise((resolve) => setTimeout(resolve, 11000));
 
         const response = await request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: 'test@example.com',
             password: 'password123',
@@ -106,7 +112,7 @@ describe('Rate Limiter Middleware', () => {
         await new Promise((resolve) => setTimeout(resolve, 11000));
 
         const response1 = await request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: 'test1@example.com',
             password: 'password123',
@@ -114,7 +120,7 @@ describe('Rate Limiter Middleware', () => {
           });
 
         const response2 = await request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: 'test2@example.com',
             password: 'password123',
@@ -154,7 +160,7 @@ describe('Rate Limiter Middleware', () => {
         // Make 3 login attempts (at the limit)
         for (let i = 0; i < 3; i++) {
           const response = await request(app)
-            .post('/auth/login')
+            .post('/api/v1/auth/login')
             .send({
               email: 'test@example.com',
               password: i === 0 ? 'password123' : 'wrong', // First succeeds, rest fail
@@ -168,7 +174,7 @@ describe('Rate Limiter Middleware', () => {
 
         // 4th attempt should be rate limited
         const blockedResponse = await request(app)
-          .post('/auth/login')
+          .post('/api/v1/auth/login')
           .send({
             email: 'test@example.com',
             password: 'password123',
@@ -182,7 +188,7 @@ describe('Rate Limiter Middleware', () => {
         // Make 2 register attempts
         for (let i = 1; i <= 2; i++) {
           await request(app)
-            .post('/auth/register')
+            .post('/api/v1/auth/register')
             .send({
               email: `test${i}@example.com`,
               password: 'password123',
@@ -192,7 +198,7 @@ describe('Rate Limiter Middleware', () => {
 
         // Make 1 login attempt (should work)
         const loginResponse = await request(app)
-          .post('/auth/login')
+          .post('/api/v1/auth/login')
           .send({
             email: 'test@example.com',
             password: 'password123',
@@ -202,7 +208,7 @@ describe('Rate Limiter Middleware', () => {
 
         // Next request should be blocked (3rd total)
         const blockedResponse = await request(app)
-          .post('/auth/login')
+          .post('/api/v1/auth/login')
           .send({
             email: 'test@example.com',
             password: 'password123',
@@ -230,7 +236,7 @@ describe('Rate Limiter Middleware', () => {
       });
 
       const loginResponse = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -248,7 +254,7 @@ describe('Rate Limiter Middleware', () => {
       });
 
       const loginResponse2 = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test2@example.com',
           password: 'password123',
@@ -261,7 +267,7 @@ describe('Rate Limiter Middleware', () => {
       // Make 5 requests (at the limit)
       for (let i = 0; i < 5; i++) {
         const response = await request(app)
-          .get('/users')
+          .get('/api/v1/users')
           .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
@@ -273,7 +279,7 @@ describe('Rate Limiter Middleware', () => {
       // Make 5 requests (at the limit)
       for (let i = 0; i < 5; i++) {
         const response = await request(app)
-          .get('/users')
+          .get('/api/v1/users')
           .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
@@ -281,7 +287,7 @@ describe('Rate Limiter Middleware', () => {
 
       // 6th request should be blocked
       const blockedResponse = await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       expect(blockedResponse.status).toBe(429);
@@ -294,13 +300,13 @@ describe('Rate Limiter Middleware', () => {
       // Exhaust first user's limit
       for (let i = 0; i < 5; i++) {
         await request(app)
-          .get('/users')
+          .get('/api/v1/users')
           .set('Authorization', `Bearer ${token}`);
       }
 
       // Second user should still have their own limit (should work)
       const response = await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token2}`);
 
       expect(response.status).toBe(200);
@@ -310,20 +316,20 @@ describe('Rate Limiter Middleware', () => {
     it('should apply rate limit to different authenticated endpoints', async () => {
       // Make requests to different endpoints
       await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       await request(app)
-        .get('/projects')
+        .get('/api/v1/projects')
         .set('Authorization', `Bearer ${token}`);
 
       await request(app)
-        .get('/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', `Bearer ${token}`);
 
       // All should work and count toward the same limit
       const response = await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -333,13 +339,13 @@ describe('Rate Limiter Middleware', () => {
       // Exhaust limit
       for (let i = 0; i < 5; i++) {
         await request(app)
-          .get('/users')
+          .get('/api/v1/users')
           .set('Authorization', `Bearer ${token}`);
       }
 
       // Verify it's blocked
       const blockedResponse = await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       expect(blockedResponse.status).toBe(429);
@@ -349,16 +355,16 @@ describe('Rate Limiter Middleware', () => {
 
       // Should work again after window expires
       const response = await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
     }, 20000); // Increase Jest timeout for this test
 
-    it('should include rate limit headers in API responses', async () => {
-      const response = await request(app)
-        .get('/users')
-        .set('Authorization', `Bearer ${token}`);
+      it('should include rate limit headers in API responses', async () => {
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.headers['ratelimit-limit']).toBeDefined();
@@ -428,7 +434,7 @@ describe('Rate Limiter Middleware', () => {
       // Exhaust auth limit (3 requests)
       for (let i = 1; i <= 3; i++) {
         await request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: `test${i}@example.com`,
             password: 'password123',
@@ -438,7 +444,7 @@ describe('Rate Limiter Middleware', () => {
 
       // Auth should be blocked
       const authBlocked = await request(app)
-        .post('/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           email: 'test4@example.com',
           password: 'password123',
@@ -463,7 +469,7 @@ describe('Rate Limiter Middleware', () => {
       });
 
       const loginResponse = await request(app)
-        .post('/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'test@example.com',
           password: 'password123',
@@ -473,7 +479,7 @@ describe('Rate Limiter Middleware', () => {
 
       // Authenticated requests count toward API limit
       await request(app)
-        .get('/users')
+        .get('/api/v1/users')
         .set('Authorization', `Bearer ${token}`);
 
       // Unauthenticated requests count toward global limit
@@ -523,7 +529,7 @@ describe('Rate Limiter Middleware', () => {
       // Create users for registration
       const promises = Array.from({ length: 5 }, (_, i) =>
         request(app)
-          .post('/auth/register')
+          .post('/api/v1/auth/register')
           .send({
             email: `test${Date.now()}-${i}@example.com`,
             password: 'password123',

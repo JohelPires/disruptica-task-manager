@@ -78,19 +78,18 @@ describe('Tasks API', () => {
     });
     projectId = project.id;
 
-    const project2 = await prisma.project.create({
+    await prisma.project.create({
       data: {
         name: 'Other Project',
         ownerId: member2Id,
       },
     });
-    // project2Id = project2.id;
   });
 
   describe('POST /projects/:projectId/tasks', () => {
     it('should create task by project owner', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           title: 'Test Task',
@@ -114,7 +113,7 @@ describe('Tasks API', () => {
       });
 
       const response = await request(app)
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           title: 'Member Task',
@@ -125,7 +124,7 @@ describe('Tasks API', () => {
 
     it('should create task by global owner', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({
           title: 'Owner Task',
@@ -136,7 +135,7 @@ describe('Tasks API', () => {
 
     it('should not create task by non-member', async () => {
       const response = await request(app)
-        .post(`/projects/${projectId}/tasks`)
+        .post(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           title: 'Unauthorized Task',
@@ -167,7 +166,7 @@ describe('Tasks API', () => {
 
     it('should get tasks by project owner', async () => {
       const response = await request(app)
-        .get(`/projects/${projectId}/tasks`)
+        .get(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -184,7 +183,7 @@ describe('Tasks API', () => {
       });
 
       const response = await request(app)
-        .get(`/projects/${projectId}/tasks`)
+        .get(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(200);
@@ -193,7 +192,7 @@ describe('Tasks API', () => {
 
     it('should not get tasks by non-member', async () => {
       const response = await request(app)
-        .get(`/projects/${projectId}/tasks`)
+        .get(`/api/v1/projects/${projectId}/tasks`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
@@ -216,7 +215,7 @@ describe('Tasks API', () => {
 
     it('should get task by project owner', async () => {
       const response = await request(app)
-        .get(`/tasks/${taskId}`)
+        .get(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(200);
@@ -233,7 +232,7 @@ describe('Tasks API', () => {
       });
 
       const response = await request(app)
-        .get(`/tasks/${taskId}`)
+        .get(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(200);
@@ -241,7 +240,7 @@ describe('Tasks API', () => {
 
     it('should not get task by non-member', async () => {
       const response = await request(app)
-        .get(`/tasks/${taskId}`)
+        .get(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
@@ -264,7 +263,7 @@ describe('Tasks API', () => {
 
     it('should update task by project owner', async () => {
       const response = await request(app)
-        .put(`/tasks/${taskId}`)
+        .put(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${memberToken}`)
         .send({
           title: 'Updated Task',
@@ -286,7 +285,7 @@ describe('Tasks API', () => {
       });
 
       const response = await request(app)
-        .put(`/tasks/${taskId}`)
+        .put(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           status: 'done',
@@ -297,7 +296,7 @@ describe('Tasks API', () => {
 
     it('should not update task by non-member', async () => {
       const response = await request(app)
-        .put(`/tasks/${taskId}`)
+        .put(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${member2Token}`)
         .send({
           title: 'Unauthorized Update',
@@ -323,7 +322,7 @@ describe('Tasks API', () => {
 
     it('should delete task by project owner', async () => {
       const response = await request(app)
-        .delete(`/tasks/${taskId}`)
+        .delete(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${memberToken}`);
 
       expect(response.status).toBe(204);
@@ -336,7 +335,7 @@ describe('Tasks API', () => {
 
     it('should delete task by global owner', async () => {
       const response = await request(app)
-        .delete(`/tasks/${taskId}`)
+        .delete(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${ownerToken}`);
 
       expect(response.status).toBe(204);
@@ -352,7 +351,7 @@ describe('Tasks API', () => {
       });
 
       const response = await request(app)
-        .delete(`/tasks/${taskId}`)
+        .delete(`/api/v1/tasks/${taskId}`)
         .set('Authorization', `Bearer ${member2Token}`);
 
       expect(response.status).toBe(403);
