@@ -28,6 +28,10 @@ tags:
   - name: Comments
     description: Comment management endpoints
 
+# Global security - applies to all endpoints unless overridden
+security:
+  - bearerAuth: []
+
 components:
   securitySchemes:
     bearerAuth:
@@ -403,6 +407,7 @@ paths:
     post:
       summary: Register a new user
       tags: [Authentication]
+      security: []  # Override global security - this endpoint is public
       parameters:
         - $ref: '#/components/parameters/AcceptVersion'
       requestBody:
@@ -429,6 +434,7 @@ paths:
     post:
       summary: Login with email and password
       tags: [Authentication]
+      security: []  # Override global security - this endpoint is public
       parameters:
         - $ref: '#/components/parameters/AcceptVersion'
       requestBody:
@@ -767,6 +773,8 @@ paths:
             enum: [asc, desc]
             default: desc
           description: Sort direction
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Projects retrieved successfully
@@ -1020,6 +1028,8 @@ paths:
             type: string
             format: uuid
           description: Project ID
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -1179,6 +1189,8 @@ paths:
             type: string
           description: 'Comma-separated list of relations to include (valid values: comments, project, assignedTo, createdBy). Default includes: project, assignedTo, createdBy'
           example: comments,project,assignedTo,createdBy
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Tasks retrieved successfully
@@ -1268,6 +1280,8 @@ paths:
             type: string
             format: uuid
           description: Task ID
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
