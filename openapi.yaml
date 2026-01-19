@@ -202,11 +202,11 @@ components:
           type: string
           minLength: 1
           description: User full name
-        role:
-          type: string
-          enum: [owner, member]
-          default: member
-          description: User role (optional, defaults to member)
+        # role:
+        #   type: string
+        #   enum: [owner, member]
+        #   default: member
+        #   description: User role (optional, defaults to member)
 
     LoginRequest:
       type: object
