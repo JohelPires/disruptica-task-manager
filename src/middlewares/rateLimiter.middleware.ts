@@ -46,7 +46,9 @@ export const apiRateLimiter = rateLimit({
     }
     // Use ipKeyGenerator helper for proper IPv6 address handling
     // This prevents IPv6 users from bypassing rate limits
-    return `ip:${ipKeyGenerator(req)}`;
+    // ipKeyGenerator takes the IP string and returns IPv4 as-is or IPv6 as CIDR subnet
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    return `ip:${ipKeyGenerator(ip)}`;
   },
 });
 
