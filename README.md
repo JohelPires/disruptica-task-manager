@@ -608,21 +608,149 @@ The following endpoints remain unversioned (internal/utility routes):
 
 ## 🧪 Testing
 
+### Running Tests
+
 Run the test suite:
 
 ```bash
 npm test
 ```
 
+Run tests with coverage reporting:
+
+```bash
+npm run test:coverage
+```
+
 The tests use a separate test database (`TEST_DATABASE_URL`). Make sure it's configured in your `.env` file.
+
+### Test Structure
 
 Tests are located in the `tests/` directory and include:
 
--   Authentication tests
--   Project management tests
--   Task management tests
--   Comment tests
--   Rate limiter tests
+#### Unit Tests
+-   **Authentication tests** (`auth.test.ts`) - User registration, login, and authentication flows
+-   **Project management tests** (`projects.test.ts`) - CRUD operations for projects
+-   **Task management tests** (`tasks.test.ts`) - CRUD operations for tasks
+-   **Comment tests** (`comments.test.ts`) - Comment creation and deletion
+-   **Rate limiter tests** (`rateLimiter.test.ts`) - Rate limiting behavior and headers
+
+#### Integration Tests (`tests/integration/`)
+-   **Core workflows** (`workflows.test.ts`) - End-to-end workflows:
+    - Complete project lifecycle (register → create project → add members → create tasks → add comments)
+    - Authorization boundaries between project owners and members
+    - Authentication and protected routes behavior
+    - Cascade deletion behavior
+-   **Edge cases** (`edge-cases.test.ts`) - Failure modes and error handling:
+    - Invalid UUIDs in path parameters
+    - Missing or malformed request bodies
+    - Unauthorized and forbidden access patterns
+    - Non-existent resources (404 errors)
+    - Race conditions and concurrent operations
+    - Invalid idempotency key formats
+-   **Idempotency and concurrency** (`idempotency-concurrency.test.ts`) - Idempotency key behavior:
+    - Duplicate request handling with idempotency keys
+    - Concurrent requests with the same idempotency key
+    - Idempotency key scoping (by user, project, task)
+    - Response consistency for cached responses
+    - Error response handling (non-cached)
+
+### Test Coverage
+
+Coverage reporting is enabled and generates reports in multiple formats:
+
+-   **Text summary** - Displayed in console output
+-   **HTML report** - Generated in `coverage/index.html` (open in browser for detailed view)
+-   **LCOV report** - Generated in `coverage/lcov.info` (for CI/CD integration)
+
+#### Coverage Thresholds
+
+The test suite enforces minimum coverage thresholds:
+-   **Branches**: 60%
+-   **Functions**: 60%
+-   **Lines**: 60%
+-   **Statements**: 60%
+
+#### Viewing Coverage Reports
+
+After running `npm run test:coverage`, you can:
+
+1. **View text summary** in the console output
+2. **Open HTML report**:
+   ```bash
+   # On macOS
+   open coverage/index.html
+   
+   # On Linux
+   xdg-open coverage/index.html
+   
+   # On Windows
+   start coverage/index.html
+   ```
+
+#### Coverage Exclusions
+
+The following are excluded from coverage:
+-   Type definition files (`*.d.ts`)
+-   Server entry point (`server.ts`)
+-   Swagger configuration (`swagger.ts`)
+-   Type definitions (`types/**`)
+
+### Test Database Setup
+
+The test suite requires a separate test database. Ensure your `.env` file includes:
+
+```env
+TEST_DATABASE_URL="postgresql://user:password@localhost:5432/taskmanager_test?schema=public"
+```
+
+The test setup automatically runs migrations before tests execute.
+
+### Writing Tests
+
+#### Test Guidelines
+
+-   Use **black-box testing** via HTTP requests (prefer `supertest` over direct function calls)
+-   Avoid excessive mocking - tests should run against the real Express app
+-   Ensure tests are **isolated** - each test should clean up its own data
+-   Use `beforeEach` hooks to reset database state
+-   Tests should be **deterministic** and **repeatable**
+
+#### Test Isolation
+
+Each test file should clean up its data in `beforeEach`:
+
+```typescript
+beforeEach(async () => {
+  await prisma.comment.deleteMany();
+  await prisma.task.deleteMany();
+  await prisma.projectMember.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.idempotencyKey.deleteMany();
+  await prisma.user.deleteMany();
+});
+```
+
+#### Integration Test Example
+
+```typescript
+it('should complete full workflow', async () => {
+  // 1. Register user
+  const registerResponse = await request(app)
+    .post('/api/v1/auth/register')
+    .send({ email: 'test@example.com', password: 'password123', name: 'Test' });
+  
+  // 2. Create project
+  const projectResponse = await request(app)
+    .post('/api/v1/projects')
+    .set('Authorization', `Bearer ${registerResponse.body.token}`)
+    .send({ name: 'Test Project' });
+  
+  // 3. Verify project was created
+  expect(projectResponse.status).toBe(201);
+  expect(projectResponse.body.project.name).toBe('Test Project');
+});
+```
 
 ## 📁 Project Structure
 
