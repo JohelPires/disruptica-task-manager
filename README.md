@@ -35,6 +35,7 @@ A comprehensive REST API for managing tasks, projects, users, and comments built
 -   ✅ **Task Management** - Full CRUD operations with advanced filtering, sorting, and pagination
 -   💬 **Comments** - Add comments to tasks for collaboration
 -   👥 **User Management** - User profiles with role-based access (owner/member)
+-   🔄 **Idempotency Keys** - Prevent duplicate resource creation with idempotency key support
 -   🚦 **Rate Limiting** - Protect API endpoints from abuse with configurable rate limits
 -   📚 **API Documentation** - Interactive Swagger/OpenAPI documentation
 -   🔒 **Security** - Password hashing with bcrypt, secure JWT tokens
@@ -70,6 +71,7 @@ The database schema uses PostgreSQL with Prisma ORM. You can view an interactive
 -   **ProjectMember** - Many-to-many relationship between projects and members with roles
 -   **Task** - Tasks belonging to projects with status, priority, and assignments
 -   **Comment** - Comments on tasks for collaboration
+-   **IdempotencyKey** - Stores idempotency keys to prevent duplicate resource creation
 
 ### Relationships
 
@@ -80,6 +82,7 @@ The database schema uses PostgreSQL with Prisma ORM. You can view an interactive
 -   User → Task (many-to-many, assignedTo/createdBy)
 -   Task → Comment (one-to-many)
 -   User → Comment (one-to-many, author)
+-   User → IdempotencyKey (one-to-many, for tracking idempotent requests)
 
 ## 📦 Prerequisites
 
@@ -363,6 +366,95 @@ curl -X GET https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/proje
 
 **Note**: Replace `https://canario-disruptica-tm-api.qmono1.easypanel.host` with `http://localhost:3000` for local development.
 
+## 🔄 Idempotency Keys
+
+The API supports idempotency keys to prevent duplicate resource creation when retrying requests. This is especially useful for network failures or client-side retries.
+
+### Supported Endpoints
+
+Idempotency key support is available for the following POST endpoints:
+
+-   `POST /api/v1/projects` - Create project
+-   `POST /api/v1/projects/:projectId/tasks` - Create task
+-   `POST /api/v1/tasks/:taskId/comments` - Create comment
+
+### How It Works
+
+1. **Send Request with Idempotency Key**: Include an `Idempotency-Key` header with a unique value (e.g., UUID)
+2. **First Request**: The API processes the request normally and stores the response
+3. **Duplicate Request**: If the same key is used within 24 hours, the API returns the cached response without creating a duplicate resource
+
+### Key Scoping
+
+Idempotency keys are scoped by:
+-   **User ID** - Each user has their own idempotency key namespace
+-   **HTTP Method** - Different methods are isolated
+-   **Request Path** - Path parameters (like `projectId`, `taskId`) are included in the scope
+-   **Key Value** - The actual idempotency key value
+
+This means:
+-   The same key can be used for different endpoints
+-   The same key can be used by different users
+-   Path parameters ensure keys are scoped correctly (e.g., different `projectId` values create different scopes)
+
+### Example Usage
+
+**Create a project with idempotency key:**
+
+```bash
+curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{
+    "name": "My Project",
+    "description": "Project description"
+  }'
+```
+
+**Retry the same request (duplicate):**
+
+```bash
+# Same request with same idempotency key - returns cached response
+curl -X POST https://canario-disruptica-tm-api.qmono1.easypanel.host/api/v1/projects \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{
+    "name": "My Project",
+    "description": "Project description"
+  }'
+```
+
+The second request will return the same response as the first, without creating a duplicate project.
+
+### Key Expiration
+
+-   Idempotency keys expire after **24 hours**
+-   Expired keys are automatically cleaned up
+-   After expiration, the same key can be reused for a new request
+
+### Error Handling
+
+-   **Invalid Format**: Returns `400 Bad Request` with `INVALID_IDEMPOTENCY_KEY` error code
+-   **Unauthorized**: Returns `401 Unauthorized` if authentication is required but not provided
+-   **Key Expired**: Expired keys are automatically deleted and the request proceeds normally
+
+### Best Practices
+
+1. **Generate Unique Keys**: Use UUIDs or other unique identifiers for idempotency keys
+2. **Store Keys Client-Side**: Keep track of idempotency keys for retry scenarios
+3. **Key Per Operation**: Use a new key for each distinct operation
+4. **Handle Cached Responses**: Be prepared to receive cached responses (status 200) instead of creation responses (status 201) on retries
+
+### Notes
+
+-   Idempotency keys are **optional** - requests without the header proceed normally
+-   Only **201 Created** responses are cached
+-   The middleware fails open - if idempotency checking fails, the request proceeds normally
+-   Other endpoints (PUT, DELETE) are naturally idempotent and don't require idempotency keys
+-   Endpoints with unique constraints (like `POST /auth/register` with unique email) are already idempotent
+
 ## 🔄 API Versioning
 
 The API uses URI-based versioning with support for version negotiation via HTTP headers.
@@ -453,7 +545,7 @@ The following endpoints remain unversioned (internal/utility routes):
 
 | Method | Endpoint                                  | Description                                          | Auth Required    |
 | ------ | ----------------------------------------- | ---------------------------------------------------- | ---------------- |
-| POST   | `/api/v1/projects`                       | Create a new project                                 | Yes              |
+| POST   | `/api/v1/projects`                       | Create a new project (supports idempotency keys)    | Yes              |
 | GET    | `/api/v1/projects`                       | Get all user's projects (with filtering, pagination) | Yes              |
 | GET    | `/api/v1/projects/:id`                   | Get project by ID                                    | Yes              |
 | PUT    | `/api/v1/projects/:id`                   | Update project                                       | Yes (Owner only) |
@@ -474,7 +566,7 @@ The following endpoints remain unversioned (internal/utility routes):
 
 | Method | Endpoint                                 | Description                | Auth Required |
 | ------ | ---------------------------------------- | -------------------------- | ------------- |
-| POST   | `/api/v1/projects/:projectId/tasks`      | Create a task in a project | Yes           |
+| POST   | `/api/v1/projects/:projectId/tasks`      | Create a task in a project (supports idempotency keys) | Yes           |
 | GET    | `/api/v1/projects/:projectId/tasks`      | Get all tasks in project   | Yes           |
 | GET    | `/api/v1/tasks/:id`                      | Get task by ID             | Yes           |
 | PUT    | `/api/v1/tasks/:id`                      | Update task                | Yes           |
@@ -499,7 +591,7 @@ The following endpoints remain unversioned (internal/utility routes):
 
 | Method | Endpoint                              | Description                 | Auth Required     |
 | ------ | ------------------------------------- | --------------------------- | ----------------- |
-| POST   | `/api/v1/tasks/:taskId/comments`      | Create a comment on a task  | Yes               |
+| POST   | `/api/v1/tasks/:taskId/comments`      | Create a comment on a task (supports idempotency keys)  | Yes               |
 | GET    | `/api/v1/tasks/:taskId/comments`      | Get all comments for a task | Yes               |
 | GET    | `/api/v1/comments/:id`                | Get comment by ID           | Yes               |
 | DELETE | `/api/v1/comments/:id`                | Delete comment              | Yes (Author only) |
@@ -546,6 +638,7 @@ disruptica-task-manager/
 │   ├── middlewares/           # Express middlewares
 │   │   ├── auth.middleware.ts         # JWT authentication
 │   │   ├── error.middleware.ts        # Error handling
+│   │   ├── idempotency.middleware.ts  # Idempotency key support
 │   │   ├── project-owner.middleware.ts # Project ownership verification
 │   │   └── rateLimiter.middleware.ts  # Rate limiting
 │   ├── modules/               # Feature modules

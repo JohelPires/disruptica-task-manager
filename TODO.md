@@ -7,7 +7,7 @@
 
 ## 19/01
 
-[ ] fix idempotency issues
+[x] fix idempotency issues
 [ ] testing
 [ ] fix failing tests
 [ ] verify database performance issues (n+1, etc)
