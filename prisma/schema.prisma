@@ -102,3 +102,19 @@ model Comment {
   @@map("comments")
 }
 
+model IdempotencyKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  method    String
+  path      String
+  userId    String
+  response  Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([key])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+

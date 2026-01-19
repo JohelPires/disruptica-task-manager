@@ -3,10 +3,11 @@ import * as projectController from './project.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 import { requireProjectOwner } from '../../middlewares/project-owner.middleware';
 import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
+import { idempotencyMiddleware } from '../../middlewares/idempotency.middleware';
 
 const router = Router();
 
-router.post('/', apiRateLimiter, requireAuth, projectController.create);
+router.post('/', apiRateLimiter, requireAuth, idempotencyMiddleware, projectController.create);
 
 router.get('/', apiRateLimiter, requireAuth, projectController.getAll);
 

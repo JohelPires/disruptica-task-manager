@@ -148,6 +148,24 @@ export function errorMiddleware(
         })
     }
 
+    if (error.message === 'Invalid idempotency key format') {
+        return res.status(400).json({
+            error: {
+                message: error.message,
+                code: 'INVALID_IDEMPOTENCY_KEY',
+            },
+        })
+    }
+
+    if (error.message === 'Idempotency key expired') {
+        return res.status(410).json({
+            error: {
+                message: error.message,
+                code: 'IDEMPOTENCY_KEY_EXPIRED',
+            },
+        })
+    }
+
     // Unhandled errors - log for debugging but don't expose details to client
     // Log full error details including stack trace for server errors
     requestLogger.error(
