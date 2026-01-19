@@ -7,7 +7,7 @@ export const create = async (
     next: NextFunction
 ) => {
     try {
-        const userId = (req as any).user.userId
+        const userId = req.user!.userId
         const project = await projectService.createProject(req.body, userId)
         res.status(201).json({ project })
     } catch (error) {
@@ -21,8 +21,8 @@ export const getAll = async (
     next: NextFunction
 ) => {
     try {
-        const userId = (req as any).user.userId
-        const userRole = (req as any).user.role
+        const userId = req.user!.userId
+        const userRole = req.user!.role
 
         const includeParam = req.query.include as string | undefined
         const includeOptions: {
@@ -100,8 +100,8 @@ export const getById = async (
 ) => {
     try {
         const { id } = req.params
-        const userId = (req as any).user.userId
-        const userRole = (req as any).user.role
+        const userId = req.user!.userId
+        const userRole = req.user!.role
         const project = await projectService.getProjectById(
             id,
             userId,

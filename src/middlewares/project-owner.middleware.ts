@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/prisma';
-import { AuthRequest } from './auth.middleware';
 
 /**
  * Middleware that enforces project ownership authorization.
@@ -11,7 +10,7 @@ import { AuthRequest } from './auth.middleware';
 export async function requireProjectOwner(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
-    const user = (req as AuthRequest).user;
+    const user = req.user;
 
     if (!user) {
       return res.status(401).json({

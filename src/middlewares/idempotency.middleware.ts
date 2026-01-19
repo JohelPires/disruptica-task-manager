@@ -52,7 +52,7 @@ export function idempotencyMiddleware(
         })
     }
 
-    const userId = (req as any).user?.userId
+    const userId = req.user?.userId
     if (!userId) {
         return res.status(401).json({
             error: {

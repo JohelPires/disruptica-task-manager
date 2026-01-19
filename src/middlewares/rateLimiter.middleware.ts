@@ -1,6 +1,6 @@
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
+import { Request } from 'express';
 import { env } from '../config/env';
-import { AuthRequest } from './auth.middleware';
 
 /**
  * Strict rate limiter for authentication endpoints (register, login).
@@ -39,13 +39,14 @@ export const apiRateLimiter = rateLimit({
   skip: () => !env.RATE_LIMIT_ENABLED,
   // Use user ID if available, otherwise fall back to IP (with IPv6 support)
   // Per-user limiting prevents abuse while allowing legitimate concurrent requests
-  keyGenerator: (req) => {
-    const userId = (req as AuthRequest).user?.userId;
+  keyGenerator: (req: Request) => {
+    const userId = req.user?.userId;
     if (userId) {
       return `user:${userId}`;
     }
-    // Use ipKeyGenerator helper for proper IPv6 handling
-    return ipKeyGenerator(req as any);
+    // Extract IP address with proper IPv6 handling
+    // req.ip is provided by express and handles proxy headers correctly when trust proxy is configured
+    return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
   },
 });
 

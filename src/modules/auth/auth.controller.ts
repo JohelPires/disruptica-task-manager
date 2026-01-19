@@ -45,7 +45,7 @@ export const getMe = async (
     next: NextFunction
 ) => {
     try {
-        const userId = (req as any).user.userId
+        const userId = req.user!.userId
         const user = await authService.getMe(userId)
         res.json({ user })
     } catch (error) {

@@ -8,8 +8,8 @@ export const create = async (
 ) => {
     try {
         const { taskId } = req.params
-        const userId = (req as any).user.userId
-        const userRole = (req as any).user.role
+        const userId = req.user!.userId
+        const userRole = req.user!.role
         const comment = await commentService.createComment(
             taskId,
             req.body,
@@ -29,8 +29,8 @@ export const getByTask = async (
 ) => {
     try {
         const { taskId } = req.params
-        const userId = (req as any).user.userId
-        const userRole = (req as any).user.role
+        const userId = req.user!.userId
+        const userRole = req.user!.role
         const page = parseInt(req.query.page as string) || 1
         const limit = parseInt(req.query.limit as string) || 10
 
@@ -81,8 +81,8 @@ export const deleteComment = async (
 ) => {
     try {
         const { id } = req.params
-        const userId = (req as any).user.userId
-        const userRole = (req as any).user.role
+        const userId = req.user!.userId
+        const userRole = req.user!.role
         await commentService.deleteComment(id, userId, userRole)
         res.status(204).send()
     } catch (error) {

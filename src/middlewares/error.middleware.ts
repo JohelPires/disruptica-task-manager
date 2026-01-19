@@ -18,7 +18,7 @@ export function errorMiddleware(
     // Create child logger with request context
     const requestLogger = createChildLogger({
         requestId: req.requestId,
-        userId: (req as any).user?.userId,
+        userId: req.user?.userId,
         endpoint: req.path,
         method: req.method,
     })

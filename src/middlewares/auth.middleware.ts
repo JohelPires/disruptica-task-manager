@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 
-export interface AuthRequest extends Request {
-  user?: {
+/**
+ * Type alias for authenticated requests.
+ * Provided for convenience and backward compatibility.
+ * The Express.Request type is augmented globally to include the user property.
+ */
+export type AuthRequest = Request & {
+  user: {
     userId: string;
     email: string;
     role: string;
   };
-}
+};
 
 /**
  * Authentication middleware that validates JWT tokens from Authorization header.
@@ -33,7 +38,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): Re
     const payload = verifyToken(token);
 
     // Attach user context to request for downstream middleware/handlers
-    (req as AuthRequest).user = {
+    req.user = {
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
