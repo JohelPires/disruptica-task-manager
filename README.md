@@ -127,12 +127,23 @@ JWT_EXPIRES_IN="7d"
 PORT=3000
 NODE_ENV=development
 
+CORS_ORIGIN=
+
+# Logging Configuration
+LOG_LEVEL=debug
+
+# Proxy Configuration
+TRUST_PROXY=1
+
 # Rate Limiting Configuration
 RATE_LIMIT_ENABLED=true
 RATE_LIMIT_AUTH_MAX=5
 RATE_LIMIT_API_MAX=100
 RATE_LIMIT_GLOBAL_MAX=200
 RATE_LIMIT_WINDOW_MS=900000
+
+# API Base URL for Swagger documentation
+API_BASE_URL=
 ```
 
 ### 4. Set up the database
@@ -182,6 +193,9 @@ npm run prisma:seed
 | `PORT`                  | Server port                                | `3000`                       |
 | `NODE_ENV`              | Environment (development/production/test)  | `development`                |
 | `LOG_LEVEL`             | Logging level (error/warn/info/debug)      | `info` (prod), `debug` (dev) |
+| `CORS_ORIGIN`           | CORS allowed origin (empty = allow all)    | `*`                          |
+| `TRUST_PROXY`           | Number of proxy hops to trust              | `1`                          |
+| `API_BASE_URL`          | Base URL for Swagger documentation         | Empty (uses localhost)       |
 | `RATE_LIMIT_ENABLED`    | Enable/disable rate limiting               | `true`                       |
 | `RATE_LIMIT_AUTH_MAX`   | Max requests per window for auth endpoints | `5`                          |
 | `RATE_LIMIT_API_MAX`    | Max requests per window for API endpoints  | `100`                        |
@@ -501,7 +515,6 @@ The following endpoints remain unversioned (internal/utility routes):
 | ------ | ------------------------------------- | --------------------------- | ----------------- |
 | POST   | `/api/v1/tasks/:taskId/comments`      | Create a comment on a task                          | Yes               |
 | GET    | `/api/v1/tasks/:taskId/comments`      | Get all comments for a task | Yes               |
-| GET    | `/api/v1/comments/:id`                | Get comment by ID           | Yes               |
 | DELETE | `/api/v1/comments/:id`                | Delete comment              | Yes (Author only) |
 
 **Query Parameters** (for GET `/tasks/:taskId/comments`):
@@ -541,20 +554,14 @@ Tests are located in the `tests/` directory and include:
 -   **Project management tests** (`projects.test.ts`) - CRUD operations for projects
 -   **Task management tests** (`tasks.test.ts`) - CRUD operations for tasks
 -   **Comment tests** (`comments.test.ts`) - Comment creation and deletion
--   **Rate limiter tests** (`rateLimiter.test.ts`) - Rate limiting behavior and headers
 
 #### Integration Tests (`tests/integration/`)
--   **Core workflows** (`workflows.test.ts`) - End-to-end workflows:
-    - Complete project lifecycle (register → create project → add members → create tasks → add comments)
-    - Authorization boundaries between project owners and members
+-   **Core integration** (`core.integration.test.ts`) - End-to-end workflows:
+    - Health check endpoint
+    - Complete project lifecycle (register → create project → create tasks)
     - Authentication and protected routes behavior
-    - Cascade deletion behavior
--   **Edge cases** (`edge-cases.test.ts`) - Failure modes and error handling:
-    - Invalid UUIDs in path parameters
-    - Missing or malformed request bodies
-    - Unauthorized and forbidden access patterns
-    - Non-existent resources (404 errors)
-    - Race conditions and concurrent operations
+-   **Auth integration** (`auth.integration.test.ts`) - Authentication flows:
+    - User registration and login workflows
 
 ### Test Coverage
 
@@ -664,10 +671,12 @@ disruptica-task-manager/
 │   │   ├── prisma.ts         # Prisma client singleton
 │   │   └── swagger.ts        # Swagger/OpenAPI configuration
 │   ├── middlewares/           # Express middlewares
+│   │   ├── apiVersion.middleware.ts   # API version negotiation
 │   │   ├── auth.middleware.ts         # JWT authentication
 │   │   ├── error.middleware.ts        # Error handling
 │   │   ├── project-owner.middleware.ts # Project ownership verification
-│   │   └── rateLimiter.middleware.ts  # Rate limiting
+│   │   ├── rateLimiter.middleware.ts  # Rate limiting
+│   │   └── requestId.middleware.ts    # Request ID generation
 │   ├── modules/               # Feature modules
 │   │   ├── auth/             # Authentication routes, controllers, services
 │   │   ├── users/            # User management
@@ -676,18 +685,22 @@ disruptica-task-manager/
 │   │   └── comments/         # Comment management
 │   └── utils/                 # Utility functions
 │       ├── jwt.ts            # JWT token generation/verification
-│       └── password.ts       # Password hashing/verification
+│       ├── password.ts       # Password hashing/verification
+│       └── logger.ts         # Structured logging with pino
 ├── prisma/
 │   ├── schema.prisma          # Database schema definition
 │   ├── migrations/            # Database migrations
 │   └── seed.ts               # Database seeder
 ├── tests/                     # Test files
 │   ├── setup.ts              # Test setup configuration
+│   ├── setup-before.ts       # Test setup before environment
 │   ├── auth.test.ts
 │   ├── projects.test.ts
 │   ├── tasks.test.ts
 │   ├── comments.test.ts
-│   └── rateLimiter.test.ts
+│   └── integration/          # Integration tests
+│       ├── auth.integration.test.ts
+│       └── core.integration.test.ts
 ├── dist/                      # Compiled JavaScript (generated)
 ├── Dockerfile                 # Docker configuration
 ├── env.template               # Environment variables template
