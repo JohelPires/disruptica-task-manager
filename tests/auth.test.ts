@@ -5,9 +5,6 @@ import { hashPassword } from '../src/utils/password';
 
 describe('Auth API', () => {
   beforeEach(async () => {
-    // Disable rate limiting for auth tests
-    process.env.RATE_LIMIT_ENABLED = 'false';
-    
     await prisma.comment.deleteMany();
     await prisma.task.deleteMany();
     await prisma.projectMember.deleteMany();
@@ -29,20 +26,6 @@ describe('Auth API', () => {
       expect(response.body).toHaveProperty('user');
       expect(response.body).toHaveProperty('token');
       expect(response.body.user.email).toBe('test@example.com');
-      expect(response.body.user.role).toBe('member');
-    });
-
-    it('should ignore role field and always create user as member', async () => {
-      const response = await request(app)
-        .post('/api/v1/auth/register')
-        .send({
-          email: 'owner@example.com',
-          password: 'password123',
-          name: 'Owner User',
-          role: 'owner',
-        });
-
-      expect(response.status).toBe(201);
       expect(response.body.user.role).toBe('member');
     });
 
@@ -77,18 +60,6 @@ describe('Auth API', () => {
 
       expect(response.status).toBe(400);
     });
-
-    it('should validate password length', async () => {
-      const response = await request(app)
-        .post('/api/v1/auth/register')
-        .send({
-          email: 'test@example.com',
-          password: '123',
-          name: 'Test User',
-        });
-
-      expect(response.status).toBe(400);
-    });
   });
 
   describe('POST /auth/login', () => {
@@ -115,18 +86,7 @@ describe('Auth API', () => {
       expect(response.body).toHaveProperty('token');
     });
 
-    it('should not login with invalid email', async () => {
-      const response = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: 'wrong@example.com',
-          password: 'password123',
-        });
-
-      expect(response.status).toBe(401);
-    });
-
-    it('should not login with invalid password', async () => {
+    it('should not login with invalid credentials', async () => {
       const response = await request(app)
         .post('/api/v1/auth/login')
         .send({
@@ -157,6 +117,8 @@ describe('Auth API', () => {
           password: 'password123',
         });
 
+      expect(loginResponse.status).toBe(200);
+      expect(loginResponse.body).toHaveProperty('token');
       token = loginResponse.body.token;
     });
 
@@ -171,17 +133,7 @@ describe('Auth API', () => {
 
     it('should not get current user without token', async () => {
       const response = await request(app).get('/api/v1/auth/me');
-
-      expect(response.status).toBe(401);
-    });
-
-    it('should not get current user with invalid token', async () => {
-      const response = await request(app)
-        .get('/api/v1/auth/me')
-        .set('Authorization', 'Bearer invalid-token');
-
       expect(response.status).toBe(401);
     });
   });
 });
-

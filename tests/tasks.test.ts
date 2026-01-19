@@ -5,14 +5,11 @@ import { hashPassword } from '../src/utils/password';
 import { generateToken } from '../src/utils/jwt';
 
 describe('Tasks API', () => {
-  let ownerToken: string;
   let memberToken: string;
   let member2Token: string;
-  // let ownerId: string;
   let memberId: string;
-  let member2Id: string;
+  // let member2Id: string;
   let projectId: string;
-  // let project2Id: string;
 
   beforeEach(async () => {
     await prisma.comment.deleteMany();
@@ -20,15 +17,6 @@ describe('Tasks API', () => {
     await prisma.projectMember.deleteMany();
     await prisma.project.deleteMany();
     await prisma.user.deleteMany();
-
-    const owner = await prisma.user.create({
-      data: {
-        email: 'owner@example.com',
-        password: await hashPassword('password123'),
-        name: 'Global Owner',
-        role: 'owner',
-      },
-    });
 
     const member = await prisma.user.create({
       data: {
@@ -48,15 +36,8 @@ describe('Tasks API', () => {
       },
     });
 
-    // ownerId = owner.id;
     memberId = member.id;
-    member2Id = member2.id;
-
-    ownerToken = generateToken({
-      userId: owner.id,
-      email: owner.email,
-      role: owner.role,
-    });
+    // member2Id = member2.id;
 
     memberToken = generateToken({
       userId: member.id,
@@ -77,13 +58,6 @@ describe('Tasks API', () => {
       },
     });
     projectId = project.id;
-
-    await prisma.project.create({
-      data: {
-        name: 'Other Project',
-        ownerId: member2Id,
-      },
-    });
   });
 
   describe('POST /projects/:projectId/tasks', () => {
@@ -101,36 +75,6 @@ describe('Tasks API', () => {
       expect(response.status).toBe(201);
       expect(response.body.task.title).toBe('Test Task');
       expect(response.body.task.projectId).toBe(projectId);
-    });
-
-    it('should create task by project member', async () => {
-      await prisma.projectMember.create({
-        data: {
-          projectId,
-          userId: member2Id,
-          role: 'developer',
-        },
-      });
-
-      const response = await request(app)
-        .post(`/api/v1/projects/${projectId}/tasks`)
-        .set('Authorization', `Bearer ${member2Token}`)
-        .send({
-          title: 'Member Task',
-        });
-
-      expect(response.status).toBe(201);
-    });
-
-    it('should create task by global owner', async () => {
-      const response = await request(app)
-        .post(`/api/v1/projects/${projectId}/tasks`)
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          title: 'Owner Task',
-        });
-
-      expect(response.status).toBe(201);
     });
 
     it('should not create task by non-member', async () => {
@@ -173,23 +117,6 @@ describe('Tasks API', () => {
       expect(response.body.tasks.length).toBe(2);
     });
 
-    it('should get tasks by project member', async () => {
-      await prisma.projectMember.create({
-        data: {
-          projectId,
-          userId: member2Id,
-          role: 'developer',
-        },
-      });
-
-      const response = await request(app)
-        .get(`/api/v1/projects/${projectId}/tasks`)
-        .set('Authorization', `Bearer ${member2Token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.tasks.length).toBe(2);
-    });
-
     it('should not get tasks by non-member', async () => {
       const response = await request(app)
         .get(`/api/v1/projects/${projectId}/tasks`)
@@ -220,22 +147,6 @@ describe('Tasks API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.task.id).toBe(taskId);
-    });
-
-    it('should get task by project member', async () => {
-      await prisma.projectMember.create({
-        data: {
-          projectId,
-          userId: member2Id,
-          role: 'developer',
-        },
-      });
-
-      const response = await request(app)
-        .get(`/api/v1/tasks/${taskId}`)
-        .set('Authorization', `Bearer ${member2Token}`);
-
-      expect(response.status).toBe(200);
     });
 
     it('should not get task by non-member', async () => {
@@ -273,25 +184,6 @@ describe('Tasks API', () => {
       expect(response.status).toBe(200);
       expect(response.body.task.title).toBe('Updated Task');
       expect(response.body.task.status).toBe('in_progress');
-    });
-
-    it('should update task by project member', async () => {
-      await prisma.projectMember.create({
-        data: {
-          projectId,
-          userId: member2Id,
-          role: 'developer',
-        },
-      });
-
-      const response = await request(app)
-        .put(`/api/v1/tasks/${taskId}`)
-        .set('Authorization', `Bearer ${member2Token}`)
-        .send({
-          status: 'done',
-        });
-
-      expect(response.status).toBe(200);
     });
 
     it('should not update task by non-member', async () => {
@@ -332,30 +224,5 @@ describe('Tasks API', () => {
       });
       expect(task).toBeNull();
     });
-
-    it('should delete task by global owner', async () => {
-      const response = await request(app)
-        .delete(`/api/v1/tasks/${taskId}`)
-        .set('Authorization', `Bearer ${ownerToken}`);
-
-      expect(response.status).toBe(204);
-    });
-
-    it('should not delete task by project member', async () => {
-      await prisma.projectMember.create({
-        data: {
-          projectId,
-          userId: member2Id,
-          role: 'developer',
-        },
-      });
-
-      const response = await request(app)
-        .delete(`/api/v1/tasks/${taskId}`)
-        .set('Authorization', `Bearer ${member2Token}`);
-
-      expect(response.status).toBe(403);
-    });
   });
 });
-

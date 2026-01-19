@@ -8,10 +8,10 @@ if (!process.env.TEST_DATABASE_URL) {
   throw new Error('TEST_DATABASE_URL environment variable is not set');
 }
 
-// Configure rate limits for testing (faster tests with lower limits)
-// These can be overridden in individual test files if needed
+// Rate limiting is disabled in setup-before.ts (runs before modules are imported)
+// Only set it here if it wasn't set (as a fallback)
 if (process.env.RATE_LIMIT_ENABLED === undefined) {
-  process.env.RATE_LIMIT_ENABLED = 'false'; // Disable by default for existing tests
+  process.env.RATE_LIMIT_ENABLED = 'false';
 }
 
 if (process.env.RATE_LIMIT_AUTH_MAX === undefined) {

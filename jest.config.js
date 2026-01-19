@@ -24,6 +24,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest'
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
+  setupFiles: ['<rootDir>/tests/setup-before.ts'], // Runs BEFORE test files
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'] // Runs AFTER test environment setup
 };
 
