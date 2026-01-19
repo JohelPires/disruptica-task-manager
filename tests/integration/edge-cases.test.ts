@@ -19,7 +19,6 @@ describe('Edge Cases and Failure Modes', () => {
     await prisma.task.deleteMany();
     await prisma.projectMember.deleteMany();
     await prisma.project.deleteMany();
-    await prisma.idempotencyKey.deleteMany();
     await prisma.user.deleteMany();
 
     const owner = await prisma.user.create({
@@ -503,44 +502,5 @@ describe('Edge Cases and Failure Modes', () => {
     });
   });
 
-  describe('Invalid Idempotency Key Format', () => {
-    it('should return 400 for empty idempotency key', async () => {
-      const response = await request(app)
-        .post('/api/v1/projects')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .set('idempotency-key', '')
-        .send({
-          name: 'Test Project',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error.code).toBe('INVALID_IDEMPOTENCY_KEY');
-    });
-
-    it('should return 400 for whitespace-only idempotency key', async () => {
-      const response = await request(app)
-        .post('/api/v1/projects')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .set('idempotency-key', '   ')
-        .send({
-          name: 'Test Project',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error.code).toBe('INVALID_IDEMPOTENCY_KEY');
-    });
-
-    it('should return 401 for idempotency key without authentication', async () => {
-      const response = await request(app)
-        .post('/api/v1/projects')
-        .set('idempotency-key', 'valid-key-123')
-        .send({
-          name: 'Test Project',
-        });
-
-      expect(response.status).toBe(401);
-      expect(response.body.error.code).toBe('UNAUTHORIZED');
-    });
-  });
 });
 

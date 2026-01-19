@@ -2,11 +2,10 @@ import { Router } from 'express';
 import * as taskController from './task.controller';
 import { requireAuth } from '../../middlewares/auth.middleware';
 import { apiRateLimiter } from '../../middlewares/rateLimiter.middleware';
-import { idempotencyMiddleware } from '../../middlewares/idempotency.middleware';
 
 const router = Router();
 
-router.post('/projects/:projectId/tasks', apiRateLimiter, requireAuth, idempotencyMiddleware, taskController.create);
+router.post('/projects/:projectId/tasks', apiRateLimiter, requireAuth, taskController.create);
 
 router.get('/projects/:projectId/tasks', apiRateLimiter, requireAuth, taskController.getByProject);
 

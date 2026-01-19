@@ -9,7 +9,6 @@ describe('Integration Tests - Core Workflows', () => {
     await prisma.task.deleteMany();
     await prisma.projectMember.deleteMany();
     await prisma.project.deleteMany();
-    await prisma.idempotencyKey.deleteMany();
     await prisma.user.deleteMany();
   });
 
