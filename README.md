@@ -254,7 +254,7 @@ Sensitive data (passwords, tokens, secrets) is never logged.
 
 ### Production Configuration
 
-For the production environment at [https://canario-disruptica-tm-api.qmono1.easypanel.host/](https://canario-disruptica-tm-api.qmono1.easypanel.host/), ensure all environment variables are properly configured according to your hosting platform requirements.
+ For the production environment ensure all environment variables are properly configured according to your hosting platform requirements.
 
 **Important Security Notes:**
 
